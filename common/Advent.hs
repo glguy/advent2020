@@ -1,7 +1,7 @@
 {-# Language OverloadedStrings #-}
 module Advent
   ( module Advent
-  , satisfy, anySingle, sepBy, manyTill
+  , satisfy, anySingle, sepBy, manyTill, decimal
   ) where
 
 import System.Environment
