@@ -29,7 +29,7 @@ main =
 
 solve :: Int -> Int -> Vector (Vector Char) -> Int
 solve dx dy vs
-  = count (\(x,y) -> '#' == (vs Vector.! y) !% x)
+  = count (\(x,y) -> '#' == vs Vector.! y !% x)
   $ zip [0, dx ..] [0, dy .. Vector.length vs-1]
 
 -- | Modular indexing. Indexes overflow back to the beghinning
