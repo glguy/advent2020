@@ -2,7 +2,7 @@
 {-|
 Module      : Main
 Description : Day 3 solution
-Copyright   : (c) Eric Mertens, 2019
+Copyright   : (c) Eric Mertens, 2020
 License     : ISC
 Maintainer  : emertens@gmail.com
 
@@ -14,19 +14,24 @@ Sledding down a slope counting trees.
 module Main  where
 
 import Advent
+import Data.Vector (Vector)
+import qualified Data.Vector as Vector
 
 main :: IO ()
 main =
-  do inp <- map (concat . repeat) <$> getInputLines 3
-     let hits = count (\x -> head x == '#')
-     print $ hits (zipWith drop [0,3..] inp)
-     print $ hits (zipWith drop [0,1..] inp)
-           * hits (zipWith drop [0,3..] inp)
-           * hits (zipWith drop [0,5..] inp)
-           * hits (zipWith drop [0,7..] inp)
-           * hits (zipWith drop [0,1..] (everyOther inp))
+  do inp <- Vector.fromList . map Vector.fromList <$> getInputLines 3
+     print $ solve 3 1 inp
+     print $ solve 1 1 inp
+           * solve 3 1 inp
+           * solve 5 1 inp
+           * solve 7 1 inp
+           * solve 1 2 inp
 
-everyOther :: [a] -> [a]
-everyOther (x:_:xs) = x : everyOther xs
-everyOther [x]= [x]
-everyOther _ = error "bad input"
+solve :: Int -> Int -> Vector (Vector Char) -> Int
+solve dx dy vs
+  = count (\(x,y) -> '#' == (vs Vector.! y) !% x)
+  $ zip [0, dx ..] [0, dy .. Vector.length vs-1]
+
+-- | Modular indexing. Indexes overflow back to the beghinning
+(!%) :: Vector a -> Int -> a
+v !% i = v Vector.! (i `rem` length v)
