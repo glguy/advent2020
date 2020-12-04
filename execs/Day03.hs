@@ -31,6 +31,6 @@ solve dx dy vs
   = count (\(x,y) -> '#' == vs V.! y !% x)
   $ zip [0, dx ..] [0, dy .. V.length vs - 1]
 
--- | Modular indexing. Indexes overflow back to the beghinning
+-- | Modular indexing. Indexes overflow back to the beginning.
 (!%) :: V.Vector v a => v a -> Int -> a
 v !% i = v V.! (i `mod` V.length v)
