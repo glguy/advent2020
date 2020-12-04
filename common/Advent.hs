@@ -16,6 +16,8 @@ import Data.List
 import qualified Data.Set as Set
 import           Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Data.Vector as Vector
+import qualified Data.Vector.Unboxed as UVector
 
 -- | Get the input for the given day.
 --
@@ -53,6 +55,14 @@ getParsedLines :: Int -> Parser a -> IO [a]
 getParsedLines i p =
   do input <- getRawInput i
      either fail return (parseLines p input)
+
+type Vector = Vector.Vector
+type UVector = UVector.Vector
+
+getInputVector :: Int -> IO (Vector.Vector (UVector.Vector Char))
+getInputVector i =
+  do xs <- getInputLines i
+     pure (Vector.fromList (map UVector.fromList xs))
 
 -- | Run a parser on each line of the input file. Each line will be parsed
 -- in isolation. The parser must consume the whole line.

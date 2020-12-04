@@ -36,6 +36,7 @@ library
     containers   ^>= 0.6,
     JuicyPixels  ^>= 3.3.2,
     megaparsec   ^>= 9.0,
+    vector       ^>= 0.12,
 
 
 test-suite doctests
