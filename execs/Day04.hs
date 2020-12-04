@@ -16,9 +16,8 @@ module Main (main) where
 import           Advent
 import           Control.Applicative
 import           Control.Monad
-import           Data.Char (isDigit)
+import           Data.Char (isSpace, isAlpha, isDigit)
 import           Data.List (delete, sort)
-import           Data.List.Split (splitWhen)
 import           Data.Maybe (isJust)
 import           Text.Read (readMaybe)
 
@@ -26,14 +25,11 @@ type Field = (String, String)
 type Passport = [Field]
 
 entry :: Parser Field
-entry = (,) <$> manyTill anySingle ":" <*> many (satisfy (' '/=))
-
-consolidate :: [[Field]] -> [Passport]
-consolidate = map concat . splitWhen null
+entry = (,) <$> manyTill (satisfy isAlpha) ":" <*> many (satisfy (not . isSpace))
 
 main :: IO ()
 main =
-  do inp <- consolidate <$> getParsedLines 4 (sepBy entry " ")
+  do inp <- getParsedInput 4 ((entry `endBy` satisfy isSpace) `sepBy` "\n")
      print (count complete inp)
      print (count valid inp)
 
