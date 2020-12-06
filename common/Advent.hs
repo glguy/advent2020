@@ -1,14 +1,14 @@
 {-# Language OverloadedStrings #-}
 module Advent
   ( module Advent
-  , satisfy, anySingle, endBy, sepBy, manyTill, decimal
+  , satisfy, anySingle, endBy, sepBy, manyTill, decimal, letterChar
   ) where
 
 import System.Environment
 import Text.Printf
 import Data.Foldable (toList)
 import Text.Megaparsec (setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, manyTill)
-import Text.Megaparsec.Char (newline)
+import Text.Megaparsec.Char (newline, letterChar)
 import Text.Megaparsec.Char.Lexer (decimal, signed)
 import Text.Megaparsec.Error (errorBundlePretty)
 import Data.Void
