@@ -25,11 +25,11 @@ type Field = (String, String)
 type Passport = [Field]
 
 entry :: Parser Field
-entry = (,) <$> manyTill (satisfy isAlpha) ":" <*> many (satisfy (not . isSpace))
+entry = (,) <$> some letterChar <* ":" <*> manyTill anySingle (satisfy isSpace)
 
 main :: IO ()
 main =
-  do inp <- getParsedInput 4 ((entry `endBy` satisfy isSpace) `sepBy` "\n")
+  do inp <- getParsedInput 4 (many entry `sepBy` "\n")
      print (count complete inp)
      print (count valid inp)
 
