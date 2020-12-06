@@ -11,12 +11,22 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent
+import Advent (Parser, endBy, getParsedInput, letterChar, sepBy)
 import Control.Applicative (some)
-import Data.List (union, intersect)
+import Data.List (intersect, union)
 
+-- |
+-- >>> :main
+-- 6273
+-- 3254
 main :: IO ()
 main =
-  do inp <- getParsedInput 6 (endBy (some letterChar) "\n" `sepBy` "\n")
-     print (sum (map (length . foldr union []  ) inp))
-     print (sum (map (length . foldr1 intersect) inp))
+  do inp <- getParsedInput 6 parser
+     print (length (foldr union []   =<< inp))
+     print (length (foldr1 intersect =<< inp))
+
+-- |
+-- >>> Advent.parseMaybe parser "abc\nd\n\ne\n"
+-- Just [["abc","d"],["e"]]
+parser :: Parser [[String]]
+parser = (some letterChar `endBy` "\n") `sepBy` "\n"
