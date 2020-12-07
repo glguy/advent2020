@@ -1,13 +1,15 @@
 {-# Language OverloadedStrings #-}
 module Advent
   ( module Advent
-  , satisfy, anySingle, endBy, sepBy, manyTill, decimal, letterChar, parseMaybe
+  , satisfy, anySingle, endBy, endBy1
+  , sepBy, sepBy1, manyTill, decimal, letterChar, parseMaybe
+  , loeb
   ) where
 
 import System.Environment
 import Text.Printf
 import Data.Foldable (toList)
-import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, manyTill)
+import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, sepBy1, endBy1, manyTill)
 import Text.Megaparsec.Char (newline, letterChar)
 import Text.Megaparsec.Char.Lexer (decimal, signed)
 import Text.Megaparsec.Error (errorBundlePretty)
@@ -154,8 +156,5 @@ chunks n xs =
   case splitAt n xs of
     (a,b) -> a : chunks n b
 
-memoryParser :: Parser [Int]
-memoryParser = number `sepBy` ","
-
-getIntcodeInput :: Int -> IO [Int]
-getIntcodeInput i = getParsedInput i (memoryParser <* newline <* eof)
+loeb :: Functor f => f (f a -> a) -> f a
+loeb x = go where go = fmap ($ go) x

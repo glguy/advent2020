@@ -8,45 +8,47 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2020/day/7>
 
+The problem gives us a list of rules about the immediate contents
+of each color of bag. We use this to compute the tnrasitive
+closure of bag contents in order to answer queries about a shiny
+gold bag.
+
 -}
 module Main (main) where
 
-import           Advent (Parser, count, decimal, letterChar, sepBy, getParsedLines)
-import           Control.Applicative (some, optional, (<|>))
+import           Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, loeb)
+import           Control.Applicative (many, some, optional, (<|>))
 import           Data.Map (Map)
 import qualified Data.Map as Map
 
 type Bag = String
-type Rule = (String, [(Int, String)])
-
-target :: Bag
-target = "shiny gold"
+type Rule = (Bag, [(Int, Bag)])
 
 bag :: Parser Bag
 bag = some letterChar <> " " <> some letterChar <* " bag" <* optional "s"
 
+bags :: Parser (Int, Bag)
+bags = (,) <$> decimal <* " " <*> bag
+
+bagss :: Parser [(Int, Bag)]
+bagss = [] <$ "no other bags" <|> bags `sepBy1` ", "
+
 rule :: Parser Rule
-rule =
-  (,) <$> bag <* " contain "
-      <*> ([] <$ "no other bags" <|> sepBy ((,) <$> decimal <* " " <*> bag) ", ")
-      <* "."
+rule = (,) <$> bag <* " contain " <*> bagss <* ".\n"
+
+------------------------------------------------------------------------
 
 main :: IO ()
 main =
-  do inp <- getParsedLines 7 rule
-     let m = contents inp
-     print (count (Map.member target) m)
-     print (sum (m Map.! target))
+  do rules <- getParsedInput 7 (many rule)
+     let tc = transClosBags rules
+     print (count (Map.member "shiny gold") tc)
+     print (sum (tc Map.! "shiny gold"))
 
-contents :: [Rule] -> Map Bag (Map Bag Int)
-contents rules = m
-  where
-    m = expand <$> Map.fromList rules
+transClosBags :: [Rule] -> Map Bag (Map Bag Int)
+transClosBags rules = loeb (expand <$> Map.fromList rules)
 
-    expand inside
-      = Map.unionsWith (+)
-      [ fmap (n*)
-      $ Map.insertWith (+) sub 1
-      $ m Map.! sub
-      | (n, sub) <- inside]
-
+expand :: [(Int,Bag)] -> Map Bag (Map Bag Int) -> Map Bag Int
+expand inside tc =
+  Map.unionsWith (+)
+    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (n,b) <- inside]
