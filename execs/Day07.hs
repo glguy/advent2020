@@ -16,7 +16,7 @@ gold bag.
 -}
 module Main (main) where
 
-import           Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, loeb)
+import           Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, löb)
 import           Control.Applicative (many, some, optional, (<|>))
 import           Data.Map (Map)
 import qualified Data.Map as Map
@@ -46,7 +46,7 @@ main =
      print (sum (tc Map.! "shiny gold"))
 
 transClosBags :: [Rule] -> Map Bag (Map Bag Int)
-transClosBags rules = loeb (expand <$> Map.fromList rules)
+transClosBags rules = löb (expand <$> Map.fromList rules)
 
 expand :: [(Int,Bag)] -> Map Bag (Map Bag Int) -> Map Bag Int
 expand inside tc =

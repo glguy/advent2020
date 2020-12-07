@@ -3,12 +3,12 @@ module Advent
   ( module Advent
   , satisfy, anySingle, endBy, endBy1
   , sepBy, sepBy1, manyTill, decimal, letterChar, parseMaybe
-  , loeb
   ) where
 
 import System.Environment
 import Text.Printf
 import Data.Foldable (toList)
+import Data.Functor ((<&>))
 import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, sepBy1, endBy1, manyTill)
 import Text.Megaparsec.Char (newline, letterChar)
 import Text.Megaparsec.Char.Lexer (decimal, signed)
@@ -156,5 +156,13 @@ chunks n xs =
   case splitAt n xs of
     (a,b) -> a : chunks n b
 
-loeb :: Functor f => f (f a -> a) -> f a
-loeb x = go where go = fmap ($ go) x
+-- | Löb's theorem
+--
+-- <https://github.com/quchen/articles/blob/master/loeb-moeb.md>
+-- <https://en.wikipedia.org/wiki/L%C3%B6b%27s_theorem>
+löb :: Functor f => f (f a -> a) -> f a
+löb = möb fmap
+
+-- | 'löb' generalized over 'fmap'
+möb :: (((a -> b) -> b) -> c -> a) -> c -> a
+möb f = \x -> let go = f ($ go) x in go
