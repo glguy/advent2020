@@ -16,24 +16,20 @@ import           Control.Applicative (some, optional, (<|>))
 import           Data.Map (Map)
 import qualified Data.Map as Map
 
-type Bag = (String, String)
+type Bag = String
+type Rule = (String, [(Int, String)])
 
 target :: Bag
-target = ("shiny","gold")
-
-word :: Parser String
-word = some letterChar
+target = "shiny gold"
 
 bag :: Parser Bag
-bag = (,) <$> word <* " " <*> word <* " bag" <* optional "s"
+bag = some letterChar <> " " <> some letterChar <* " bag" <* optional "s"
 
-amount :: Parser Int
-amount = 0 <$ "no" <|> decimal
-
-rule :: Parser (Bag, [(Int, Bag)])
-rule = (,) <$> bag <* " contain " <*>
-       ([] <$ "no other bags" <|> sepBy ((,) <$> amount <* " " <*> bag) ", ")
-       <* "."
+rule :: Parser Rule
+rule =
+  (,) <$> bag <* " contain "
+      <*> ([] <$ "no other bags" <|> sepBy ((,) <$> decimal <* " " <*> bag) ", ")
+      <* "."
 
 main :: IO ()
 main =
@@ -42,7 +38,7 @@ main =
      print (count (Map.member target) m)
      print (sum (m Map.! target))
 
-contents :: [(Bag, [(Int, Bag)])] -> Map Bag (Map Bag Int)
+contents :: [Rule] -> Map Bag (Map Bag Int)
 contents rules = m
   where
     m = expand <$> Map.fromList rules
