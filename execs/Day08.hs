@@ -13,10 +13,8 @@ module Main (main) where
 
 import           Advent
 import           Control.Applicative
-import           Control.Monad
-import           Data.IntSet (IntSet)
-import qualified Data.IntSet as IntSet
 import qualified Data.Vector.Generic as V
+import qualified Data.Graph.Inductive as G
 
 data Opcode = Nop | Acc | Jmp
 
@@ -29,28 +27,23 @@ statement = (,) <$> opcode <* " " <*> number
 main :: IO ()
 main =
   do inp <- V.fromList <$> getParsedLines 8 statement
-     print (start inp FindStuck )
-     print (start inp FindToggle)
+     let g       = pgmGraph inp
+         p1      = G.dfs [0] (G.elfilter (0==) g)
+         Just p2 = G.sp 0 (V.length inp) g
 
-data Mode = FindHalt | FindStuck | FindToggle deriving Eq
+     print (pathSum inp p1)
+     print (pathSum inp p2)
 
-start :: Vector (Opcode, Int) -> Mode -> Maybe Int
-start inp = run inp IntSet.empty 0 0
+pathSum :: Vector (Opcode, Int) -> [Int] -> Int
+pathSum inp path = sum [n | i <- path, Just (Acc, n) <- [inp V.!? i]]
 
-run :: Vector (Opcode, Int) -> IntSet -> Int -> Int -> Mode -> Maybe Int
-run inp seen acc pc mode =
-  case inp V.!? pc of
-    _ | IntSet.member pc seen   -> acc <$ guard (mode == FindStuck)
-    Nothing                     -> acc <$ guard (mode == FindHalt )
-    Just cmd                    -> step cmd mode <|> alt cmd
+pgmGraph :: Vector (Opcode, Int) -> G.Gr () Int
+pgmGraph pgm =
+  G.mkGraph
+    [(i, ()) | i <- [0..V.length pgm]]
+    [e | i <- [0..V.length pgm-1], e <- pgmEdge i (pgm V.! i)]
 
-  where
-    seen' = IntSet.insert pc seen
-
-    step (Nop, _) = run inp seen' acc     (pc+1)
-    step (Acc, n) = run inp seen' (acc+n) (pc+1)
-    step (Jmp, n) = run inp seen' acc     (pc+n)
-
-    alt (Nop,n) | FindToggle <- mode = step (Jmp,n) FindHalt
-    alt (Jmp,n) | FindToggle <- mode = step (Nop,n) FindHalt
-    alt _                            = Nothing
+pgmEdge :: Int -> (Opcode, Int) -> [G.LEdge Int]
+pgmEdge start (Nop, n) = [(start, start+1, 0), (start, start+n, 1)]
+pgmEdge start (Jmp, n) = [(start, start+1, 1), (start, start+n, 0)]
+pgmEdge start (Acc, _) = [(start, start+1, 0)]
