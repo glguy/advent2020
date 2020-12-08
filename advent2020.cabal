@@ -95,6 +95,6 @@ executable Day07
 
 executable Day08
   main-is:             Day08.hs
-  build-depends:       advent2020, base, vector, fgl
+  build-depends:       advent2020, base, fgl
   hs-source-dirs:      execs
   default-language:    Haskell2010
