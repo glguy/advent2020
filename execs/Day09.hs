@@ -11,28 +11,33 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import           Advent (UVector, getParsedLines, number)
-import           Data.Maybe (listToMaybe)
 import qualified Data.Vector.Generic as V
 
 main :: IO ()
 main =
   do inp <- V.fromList <$> getParsedLines 9 number
-     let p1 = part1 inp
-     print p1
 
-     let psums = V.scanl' (+) 0 inp
-         Just (lo,hi) = search (\x y -> y-x == p1) psums
-         range = V.drop lo (V.take hi inp)
+     let target = part1 inp
+     print target
+
+     let (lo,hi) = part2 target inp 0 0 0
+         range = V.slice lo (hi-lo) inp
      print (V.minimum range + V.maximum range)
 
-search :: (Int -> Int -> Bool) -> UVector Int -> Maybe (Int,Int)
-search p haystack =
-  listToMaybe
-  [(i,j) | i <- [0   .. V.length haystack - 2]
-         , j <- [i+1 .. V.length haystack - 1]
-         , p (haystack V.! i) (haystack V.! j)]
+search :: Int -> UVector Int -> Bool
+search target haystack = null
+  [() | i <- [0   .. V.length haystack - 2]
+      , j <- [i+1 .. V.length haystack - 1]
+      , haystack V.! i + haystack V.! j == target]
 
 part1 :: UVector Int -> Int
 part1 v
-  | Just{} <- search (\x y -> x+y == v V.! 25) (V.take 25 v) = part1 (V.tail v)
-  | otherwise = v V.! 25
+  | search (v V.! 25) (V.take 25 v) = v V.! 25
+  | otherwise = part1 (V.tail v)
+
+part2 :: Int -> UVector Int -> Int -> Int -> Int -> (Int, Int)
+part2 target v acc lo hi =
+  case compare acc target of
+    EQ -> (lo, hi)
+    LT -> part2 target v (acc + v V.! hi) lo (hi+1)
+    GT -> part2 target v (acc - v V.! lo) (lo+1) hi
