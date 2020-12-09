@@ -10,12 +10,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent (UVector, getParsedLines, number)
+import           Advent (UVector, getParsedLines, decimal)
 import qualified Data.Vector.Generic as V
 
 main :: IO ()
 main =
-  do inp <- V.fromList <$> getParsedLines 9 number
+  do inp <- V.fromList <$> getParsedLines 9 decimal
 
      let target = part1 inp
      print target
