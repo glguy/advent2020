@@ -20,8 +20,7 @@ main =
      let target = part1 inp
      print target
 
-     let (lo,hi) = part2 target inp 0 0 0
-         range = V.slice lo (hi-lo) inp
+     let range = part2 target inp 0 0 0
      print (V.minimum range + V.maximum range)
 
 search :: Int -> UVector Int -> Bool
@@ -35,9 +34,9 @@ part1 v
   | search (v V.! 25) (V.take 25 v) = v V.! 25
   | otherwise = part1 (V.tail v)
 
-part2 :: Int -> UVector Int -> Int -> Int -> Int -> (Int, Int)
+part2 :: Int -> UVector Int -> Int -> Int -> Int -> UVector Int
 part2 target v acc lo hi =
   case compare acc target of
-    EQ -> (lo, hi)
-    LT -> part2 target v (acc + v V.! hi) lo (hi+1)
-    GT -> part2 target v (acc - v V.! lo) (lo+1) hi
+    EQ | hi-lo > 1 -> V.slice lo (hi-lo) v
+    LT             -> part2 target v (acc + v V.! hi) lo (hi+1)
+    _              -> part2 target v (acc - v V.! lo) (lo+1) hi
