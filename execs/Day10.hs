@@ -32,6 +32,6 @@ main =
 
      print $ rec device
            $ löb
-           $ IntMap.fromListWith (+)
-           $ (0, 1)
+           $ IntMap.fromList
+           $ (socket, 1)
            : [ (i, rec (i-3) + rec (i-2) + rec (i-1)) | i <- device:adapters ]
