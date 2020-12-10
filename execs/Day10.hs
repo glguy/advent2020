@@ -25,12 +25,8 @@ main =
      let diffs = zipWith (-) (tail jolts) jolts
      print (count (3==) diffs * count (1==) diffs)
 
-     let part2 (1:ds) x y z = part2 ds y z $! x+y+z
+     let part2 (1:ds) x y z = part2 ds y z (z+y+x)
+         part2 (2:ds) _ y z = part2 ds z 0 (z+y) -- unused in normal input
          part2 (3:ds) _ _ z = part2 ds 0 0 z
          part2 []     _ _ z = z
      print (part2 diffs 0 0 1 :: Integer)
-
--- extras
---      part2 (0:ds) z y x = part2 ds z y $! x+x
---      part2 (2:ds) _ y x = part2 ds x 0 $! x+y
---      part2 _      _ _ _ = 0
