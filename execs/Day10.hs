@@ -11,8 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent
-import           Data.List
+import           Advent (getParsedLines, count, number, löb)
+import           Data.List (sort)
 import           Data.IntMap (IntMap)
 import qualified Data.IntMap as IntMap
 import           Data.NumInstances ()
@@ -27,9 +27,11 @@ main =
      let diffs = zipWith (-) (tail jolts) jolts
      print (count (3==) diffs * count (1==) diffs)
 
-     let m :: IntMap Integer
-         m = löb
-           $ IntMap.insert 0 1
-           $ IntMap.fromListWith (+) [ (i, rec (i-3) + rec (i-2) + rec (i-1)) | i <- device:adapters ]
+     let rec :: Int -> IntMap Integer -> Integer
          rec = IntMap.findWithDefault 0
-     print (m IntMap.! device)
+
+     print $ rec device
+           $ löb
+           $ IntMap.fromListWith (+)
+           $ (0, 1)
+           : [ (i, rec (i-3) + rec (i-2) + rec (i-1)) | i <- device:adapters ]
