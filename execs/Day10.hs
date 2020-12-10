@@ -21,7 +21,7 @@ main =
      let socket = 0
      let device = maximum adapters + 3
 
-     let jolts = socket : sort adapters ++ [device]
+     let jolts = sort (socket : device : adapters)
      let diffs = zipWith (-) (tail jolts) jolts
      print (count (3==) diffs * count (1==) diffs)
 
