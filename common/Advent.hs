@@ -8,18 +8,19 @@ module Advent
 import System.Environment
 import Text.Printf
 import Data.Foldable (toList)
-import Data.Functor ((<&>))
 import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, sepBy1, endBy1, manyTill)
 import Text.Megaparsec.Char (newline, letterChar)
 import Text.Megaparsec.Char.Lexer (decimal, signed)
 import Text.Megaparsec.Error (errorBundlePretty)
 import Data.Void
 import Data.List
+import Advent.Coord
 import qualified Data.Set as Set
 import           Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Vector as Vector
 import qualified Data.Vector.Unboxed as UVector
+import qualified Data.Array.Unboxed as A
 
 -- | Get the input for the given day.
 --
@@ -65,6 +66,11 @@ getInputVector :: Int -> IO (Vector.Vector (UVector.Vector Char))
 getInputVector i =
   do xs <- getInputLines i
      pure (Vector.fromList (map UVector.fromList xs))
+
+getInputArray :: Int -> IO (A.Array Coord Char)
+getInputArray i =
+  do xs <- getInputLines i
+     pure $! A.listArray (C 0 0, C (length xs - 1) (length (head xs) - 1)) (concat xs)
 
 -- | Run a parser on each line of the input file. Each line will be parsed
 -- in isolation. The parser must consume the whole line.
@@ -166,3 +172,8 @@ löb = möb fmap
 -- | 'löb' generalized over 'fmap'
 möb :: (((a -> b) -> b) -> c -> a) -> c -> a
 möb f = \x -> let go = f ($ go) x in go
+
+arrIx :: (A.IArray a e, A.Ix i) => a i e -> i -> Maybe e
+arrIx a i
+  | A.inRange (A.bounds a) i = Just (a A.! i)
+  | otherwise = Nothing
