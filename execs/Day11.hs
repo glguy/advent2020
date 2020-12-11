@@ -21,15 +21,19 @@ main =
      print (count ('#'==) (stable adv1 inp))
      print (count ('#'==) (stable adv2 inp))
 
-stable :: Eq a => (a -> a) -> a -> a
-stable f x
-  | x == x'   = x
-  | otherwise = stable f x'
-  where x' = f x
+stable :: (a -> Maybe a) -> a -> a
+stable f x =
+  case f x of
+    Nothing -> x
+    Just x' -> stable f x'
 
-adv1 :: A.Array Coord Char -> A.Array Coord Char
-adv1 a = a A.// [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
+adv1 :: A.Array Coord Char -> Maybe (A.Array Coord Char)
+adv1 a
+  | null changes = Nothing
+  | otherwise = Just $! a A.// changes
   where
+    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
+
     occupied = count occupied1 . neighbors
 
     occupied1 i =
@@ -43,9 +47,13 @@ adv1 a = a A.// [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
         'L' | 0 == occupied i -> "#"
         _ -> []
 
-adv2 :: A.Array Coord Char -> A.Array Coord Char
-adv2 a = a A.// [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
+adv2 :: A.Array Coord Char -> Maybe (A.Array Coord Char)
+adv2 a
+  | null changes = Nothing
+  | otherwise = Just $! a A.// changes
   where
+    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
+
     occupied i = count (occupied1 i) (neighbors (C 0 0))
 
     occupied1 i d =
