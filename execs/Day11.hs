@@ -16,7 +16,8 @@ import           Advent.Coord
 import           Data.Maybe (mapMaybe)
 import qualified Data.Array.Unboxed as A
 
-type Grid = A.Array Coord Char
+type Seating   = A.Array Coord Char
+type Neighbors = A.Array Coord [Coord]
 
 main :: IO ()
 main =
@@ -31,29 +32,36 @@ stable :: (a -> Maybe a) -> a -> a
 stable f x = maybe x (stable f) (f x)
 
 -- | Immediate neighbors used in part 1
-adjacent :: Grid -> A.Array Coord [Coord]
-adjacent a = A.listArray (A.bounds a)
-  [filter (A.inRange (A.bounds a)) (neighbors i) | i <- A.range (A.bounds a)]
+adjacent :: Seating -> Neighbors
+adjacent a = A.listArray b [filter (A.inRange b) (neighbors i) | i <- A.range b]
+  where
+    b = A.bounds a
 
 -- | Line of sight neighbors used in part 2
-lineOfSight :: Grid -> A.Array Coord [Coord]
-lineOfSight a = A.listArray (A.bounds a)
-  [ mapMaybe (look i) (neighbors origin) | i <- A.range (A.bounds a) ]
+lineOfSight :: Seating -> Neighbors
+lineOfSight a = A.listArray b [mapMaybe (look i) (neighbors origin) | i <- A.range b]
   where
+    b = A.bounds a
     look i d =
       do let j = addCoord i d
          v <- arrIx a j
          case v of
-           '#' -> Just j
-           'L' -> Just j
-           _   -> look j d
+           '.' -> look j d
+           _   -> Just j
 
-adv :: Int -> A.Array Coord [Coord] -> Grid -> Maybe (A.Array Coord Char)
+-- | Advance the seating grid one timestep using a configurable
+-- threshold for seats becoming unoccupied, a precomputed neighborhood,
+-- and the current seating chart. Return 'Nothing' when nothing changes.
+adv ::
+  Int           {- ^ occupied neighbor threshold      -} ->
+  Neighbors     {- ^ neighborhood for each coordinate -} ->
+  Seating       {- ^ current seating grid             -} ->
+  Maybe Seating {- ^ updated seating grid             -}
 adv t ns a
   | null changes = Nothing
   | otherwise    = Just $! a A.// changes
   where
-    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
+    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i]
 
     -- returns True when /at least/ n neighbors are occupied
     occupied :: Int -> Coord -> Bool
