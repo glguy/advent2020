@@ -67,7 +67,7 @@ getInputVector i =
   do xs <- getInputLines i
      pure (Vector.fromList (map UVector.fromList xs))
 
-getInputArray :: Int -> IO (A.Array Coord Char)
+getInputArray :: Int -> IO (A.UArray Coord Char)
 getInputArray i =
   do xs <- getInputLines i
      pure $! A.listArray (C 0 0, C (length xs - 1) (length (head xs) - 1)) (concat xs)

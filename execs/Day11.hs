@@ -16,13 +16,13 @@ import           Advent.Coord
 import           Data.Maybe (mapMaybe)
 import qualified Data.Array.Unboxed as A
 
-type Seating   = A.Array Coord Char
+type Seating   = A.UArray Coord Char
 type Neighbors = A.Array Coord [Coord]
 
 main :: IO ()
 main =
   do inp <- getInputArray 11
-     let run f = print (count ('#'==) (stable f inp))
+     let run f = print (count ('#'==) (A.elems (stable f inp)))
      run (adv 4 (adjacent inp))
      run (adv 5 (lineOfSight inp))
 
