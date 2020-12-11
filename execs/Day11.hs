@@ -13,58 +13,61 @@ module Main (main) where
 
 import           Advent
 import           Advent.Coord
+import           Data.Maybe (mapMaybe)
 import qualified Data.Array.Unboxed as A
+
+type Grid = A.Array Coord Char
 
 main :: IO ()
 main =
   do inp <- getInputArray 11
-     print (count ('#'==) (stable adv1 inp))
-     print (count ('#'==) (stable adv2 inp))
+     let run f = print (count ('#'==) (stable f inp))
+     run (adv 4 (adjacent inp))
+     run (adv 5 (lineOfSight inp))
 
+-- | Repeatedly apply the function until it returns 'Nothing'. Return the
+-- argument that returned 'Nothing'.
 stable :: (a -> Maybe a) -> a -> a
-stable f x =
-  case f x of
-    Nothing -> x
-    Just x' -> stable f x'
+stable f x = maybe x (stable f) (f x)
 
-adv1 :: A.Array Coord Char -> Maybe (A.Array Coord Char)
-adv1 a
+-- | Immediate neighbors used in part 1
+adjacent :: Grid -> A.Array Coord [Coord]
+adjacent a = A.listArray (A.bounds a)
+  [filter (A.inRange (A.bounds a)) (neighbors i) | i <- A.range (A.bounds a)]
+
+-- | Line of sight neighbors used in part 2
+lineOfSight :: Grid -> A.Array Coord [Coord]
+lineOfSight a = A.listArray (A.bounds a)
+  [ mapMaybe (look i) (neighbors origin) | i <- A.range (A.bounds a) ]
+  where
+    look i d =
+      do let j = addCoord i d
+         v <- arrIx a j
+         case v of
+           '#' -> Just j
+           'L' -> Just j
+           _   -> look j d
+
+adv :: Int -> A.Array Coord [Coord] -> Grid -> Maybe (A.Array Coord Char)
+adv t ns a
   | null changes = Nothing
-  | otherwise = Just $! a A.// changes
+  | otherwise    = Just $! a A.// changes
   where
     changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
 
-    occupied = count occupied1 . neighbors
+    -- returns True when /at least/ n neighbors are occupied
+    occupied :: Int -> Coord -> Bool
+    occupied n i = occupied1 n (ns A.! i)
 
-    occupied1 i =
-      case arrIx a i of
-        Just '#' -> True
-        _        -> False
+    occupied1 0 _  = True
+    occupied1 _ [] = False
+    occupied1 n (i:is) =
+      case a A.! i of
+        '#' -> occupied1 (n-1) is
+        _   -> occupied1 n is
 
     valueAt i =
       case a A.! i of
-        '#' | 4 <= occupied i -> "L"
-        'L' | 0 == occupied i -> "#"
-        _ -> []
-
-adv2 :: A.Array Coord Char -> Maybe (A.Array Coord Char)
-adv2 a
-  | null changes = Nothing
-  | otherwise = Just $! a A.// changes
-  where
-    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i ]
-
-    occupied i = count (occupied1 i) (neighbors (C 0 0))
-
-    occupied1 i d =
-      let j = addCoord i d in
-      case arrIx a j of
-        Just '#' -> True
-        Just '.' -> occupied1 j d
-        _        -> False
-
-    valueAt i =
-      case a A.! i of
-        '#' | 5 <= occupied i -> "L"
-        'L' | 0 == occupied i -> "#"
+        '#' | occupied t i       -> "L"
+        'L' | not (occupied 1 i) -> "#"
         _ -> []
