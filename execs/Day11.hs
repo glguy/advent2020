@@ -33,7 +33,7 @@ stable f x = maybe x (stable f) (f x)
 
 -- | Immediate neighbors used in part 1
 adjacent :: Seating -> Neighbors
-adjacent a = A.listArray b [filter (A.inRange b) (neighbors i) | i <- A.range b]
+adjacent a = A.listArray b [[j | j <- neighbors i, A.inRange b j] | i <- A.range b]
   where
     b = A.bounds a
 

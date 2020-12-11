@@ -173,7 +173,8 @@ löb = möb fmap
 möb :: (((a -> b) -> b) -> c -> a) -> c -> a
 möb f = \x -> let go = f ($ go) x in go
 
+-- | Index an array returning 'Nothing' if the index is out of bounds.
 arrIx :: (A.IArray a e, A.Ix i) => a i e -> i -> Maybe e
 arrIx a i
-  | A.inRange (A.bounds a) i = Just (a A.! i)
+  | A.inRange (A.bounds a) i = Just $! a A.! i
   | otherwise = Nothing
