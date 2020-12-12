@@ -74,8 +74,20 @@ origin = C 0 0
 north :: Coord
 north = C (-1) 0
 
+east :: Coord
+east = C 0 1
+
+south :: Coord
+south = C 1 0
+
+west :: Coord
+west = C 0 (-1)
+
 addCoord :: Coord -> Coord -> Coord
 addCoord (C y x) (C v u) = C (y+v) (x+u)
+
+scaleCoord :: Int -> Coord -> Coord
+scaleCoord n (C x y) = C (x*n) (y*n)
 
 drawCoords :: Map Coord Char -> String
 drawCoords pixels = unlines [[pixel (C y x) | x <- [minx .. maxx]] | y <- [miny .. maxy]]
