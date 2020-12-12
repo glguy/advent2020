@@ -12,8 +12,17 @@ module Main (main) where
 
 import Advent
 import Advent.Coord
+import Data.List (foldl')
 
 type Command = (Char, Int)
+
+data State = State { here, vect :: !Coord }
+
+type Focus = (Coord -> Coord) -> (State -> State)
+
+updateHere, updateVect :: Focus
+updateHere f (State x y) = State (f x) y
+updateVect f (State x y) = State x (f y)
 
 command :: Parser Command
 command = (,) <$> anySingle <*> number
@@ -21,39 +30,22 @@ command = (,) <$> anySingle <*> number
 main :: IO ()
 main =
   do inp <- getParsedLines 12 command
-     print (part1 origin (C    0  1) inp)
-     print (part2 origin (C (-1) 10) inp)
+     print (walk updateHere (State origin (C    0  1)) inp)
+     print (walk updateVect (State origin (C (-1) 10)) inp)
 
-part1 :: Coord -> Coord -> [Command] -> Int
-part1 here _ [] = manhattan origin here
-part1 here dir (x:xs) =
-  case x of
-    ('N',   n) -> part1 (addCoord (scaleCoord n north) here) dir xs
-    ('S',   n) -> part1 (addCoord (scaleCoord n south) here) dir xs
-    ('E',   n) -> part1 (addCoord (scaleCoord n east ) here) dir xs
-    ('W',   n) -> part1 (addCoord (scaleCoord n west ) here) dir xs
-    ('F',   n) -> part1 (addCoord (scaleCoord n dir) here) dir xs
-    ('L',  90) -> part1 here (turnLeft   dir) xs
-    ('R',  90) -> part1 here (turnRight  dir) xs
-    ('R', 270) -> part1 here (turnLeft   dir) xs
-    ('L', 270) -> part1 here (turnRight  dir) xs
-    ('L', 180) -> part1 here (turnAround dir) xs
-    ('R', 180) -> part1 here (turnAround dir) xs
-    _          -> error ("Unknown command: " ++ show x)
+walk :: Focus -> State -> [Command] -> Int
+walk f st xs = manhattan origin (here (foldl' (action f) st xs))
 
-part2 :: Coord -> Coord -> [Command] -> Int
-part2 here _ [] = manhattan origin here
-part2 here dir (x:xs) =
-  case x of
-    ('N',   n) -> part2 here (addCoord (scaleCoord n north) dir) xs
-    ('S',   n) -> part2 here (addCoord (scaleCoord n south) dir) xs
-    ('E',   n) -> part2 here (addCoord (scaleCoord n east ) dir) xs
-    ('W',   n) -> part2 here (addCoord (scaleCoord n west ) dir) xs
-    ('F',   n) -> part2 (addCoord (scaleCoord n dir) here) dir xs
-    ('L',  90) -> part2 here (turnLeft   dir) xs
-    ('R',  90) -> part2 here (turnRight  dir) xs
-    ('R', 270) -> part2 here (turnLeft   dir) xs
-    ('L', 270) -> part2 here (turnRight  dir) xs
-    ('L', 180) -> part2 here (turnAround dir) xs
-    ('R', 180) -> part2 here (turnAround dir) xs
-    _          -> error ("Unknown command: " ++ show x)
+action :: Focus -> State -> Command -> State
+action f st ('N',   n) = f (addCoord (scaleCoord n north)) st
+action f st ('S',   n) = f (addCoord (scaleCoord n south)) st
+action f st ('E',   n) = f (addCoord (scaleCoord n east )) st
+action f st ('W',   n) = f (addCoord (scaleCoord n west )) st
+action _ st ('F',   n) = updateHere (addCoord (scaleCoord n (vect st))) st
+action _ st ('L',  90) = updateVect turnLeft   st
+action _ st ('R',  90) = updateVect turnRight  st
+action _ st ('R', 270) = updateVect turnLeft   st
+action _ st ('L', 270) = updateVect turnRight  st
+action _ st ('L', 180) = updateVect turnAround st
+action _ st ('R', 180) = updateVect turnAround st
+action _ _  x          = error ("Unknown command: " ++ show x)
