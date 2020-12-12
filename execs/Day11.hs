@@ -15,9 +15,13 @@ import           Advent
 import           Advent.Coord
 import           Data.Maybe (mapMaybe)
 import qualified Data.Array.Unboxed as A
+import qualified Data.Array.Base as AB
 
 type Seating   = A.UArray Coord Char
-type Neighbors = A.Array Coord [Coord]
+
+-- | Neighbors are stored using underlying raw indexes for fast access
+-- on the 'Seating' grid.
+type Neighbors = A.Array Coord [Int]
 
 main :: IO ()
 main =
@@ -33,7 +37,7 @@ stable f x = maybe x (stable f) (f x)
 
 -- | Immediate neighbors used in part 1
 adjacent :: Seating -> Neighbors
-adjacent a = A.listArray b [[j | j <- neighbors i, A.inRange b j] | i <- A.range b]
+adjacent a = A.listArray b [[A.index b j | j <- neighbors i, A.inRange b j] | i <- A.range b]
   where
     b = A.bounds a
 
@@ -47,7 +51,7 @@ lineOfSight a = A.listArray b [mapMaybe (look i) (neighbors origin) | i <- A.ran
          v <- arrIx a j
          case v of
            '.' -> look j d
-           _   -> Just j
+           _   -> Just (A.index b j)
 
 -- | Advance the seating grid one timestep using a configurable
 -- threshold for seats becoming unoccupied, a precomputed neighborhood,
@@ -70,7 +74,7 @@ adv t ns a
     occupied1 0 _  = True
     occupied1 _ [] = False
     occupied1 n (i:is) =
-      case a A.! i of
+      case AB.unsafeAt a i of
         '#' -> occupied1 (n-1) is
         _   -> occupied1 n is
 
