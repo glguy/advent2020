@@ -35,8 +35,8 @@ mapVect f s = s { vect = f (vect s) }
 main :: IO ()
 main =
   do inp <- getParsedLines 12 command
-     print (walk mapHere (Sim origin (C    0  1)) inp)
-     print (walk mapVect (Sim origin (C (-1) 10)) inp)
+     print (walk mapHere (Sim origin east                ) inp)
+     print (walk mapVect (Sim origin (move 10 east north)) inp)
 
 walk :: Update Sim Coord -> Sim -> [Command] -> Int
 walk f st xs = manhattan origin (here (foldl' (action f) st xs))
