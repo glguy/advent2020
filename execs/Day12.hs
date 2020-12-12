@@ -1,3 +1,4 @@
+{-# Language LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -16,36 +17,46 @@ import Data.List (foldl')
 
 type Command = (Char, Int)
 
-data State = State { here, vect :: !Coord }
-
-type Focus = (Coord -> Coord) -> (State -> State)
-
-updateHere, updateVect :: Focus
-updateHere f (State x y) = State (f x) y
-updateVect f (State x y) = State x (f y)
-
 command :: Parser Command
 command = (,) <$> anySingle <*> number
+
+-- | The simulation tracks the current location and the vector used
+-- when moving /forward/.
+data Sim = Sim { here, vect :: !Coord }
+
+-- | Apply an update function to an @a@ typed subcomponent of a
+-- @s@ typed value.
+type Update s a = (a -> a) -> (s -> s)
+
+mapHere, mapVect :: Update Sim Coord
+mapHere f s = s { here = f (here s) }
+mapVect f s = s { vect = f (vect s) }
 
 main :: IO ()
 main =
   do inp <- getParsedLines 12 command
-     print (walk updateHere (State origin (C    0  1)) inp)
-     print (walk updateVect (State origin (C (-1) 10)) inp)
+     print (walk mapHere (Sim origin (C    0  1)) inp)
+     print (walk mapVect (Sim origin (C (-1) 10)) inp)
 
-walk :: Focus -> State -> [Command] -> Int
+walk :: Update Sim Coord -> Sim -> [Command] -> Int
 walk f st xs = manhattan origin (here (foldl' (action f) st xs))
 
-action :: Focus -> State -> Command -> State
-action f st ('N',   n) = f (addCoord (scaleCoord n north)) st
-action f st ('S',   n) = f (addCoord (scaleCoord n south)) st
-action f st ('E',   n) = f (addCoord (scaleCoord n east )) st
-action f st ('W',   n) = f (addCoord (scaleCoord n west )) st
-action _ st ('F',   n) = updateHere (addCoord (scaleCoord n (vect st))) st
-action _ st ('L',  90) = updateVect turnLeft   st
-action _ st ('R',  90) = updateVect turnRight  st
-action _ st ('R', 270) = updateVect turnLeft   st
-action _ st ('L', 270) = updateVect turnRight  st
-action _ st ('L', 180) = updateVect turnAround st
-action _ st ('R', 180) = updateVect turnAround st
-action _ _  x          = error ("Unknown command: " ++ show x)
+action ::
+  Update Sim Coord {- ^ cardinal direction component -} ->
+  Sim -> Command -> Sim
+action mapCard st = \case
+  ('N',   n) -> mapCard (move n north    ) st
+  ('S',   n) -> mapCard (move n south    ) st
+  ('E',   n) -> mapCard (move n east     ) st
+  ('W',   n) -> mapCard (move n west     ) st
+  ('F',   n) -> mapHere (move n (vect st)) st
+  ('L',  90) -> mapVect turnLeft           st
+  ('R', 270) -> mapVect turnLeft           st
+  ('R',  90) -> mapVect turnRight          st
+  ('L', 270) -> mapVect turnRight          st
+  ('L', 180) -> mapVect turnAround         st
+  ('R', 180) -> mapVect turnAround         st
+  x          -> error ("Unknown command: " ++ show x)
+
+move :: Int -> Coord -> Coord -> Coord
+move n v = addCoord (scaleCoord n v)
