@@ -30,10 +30,11 @@ main =
 -- | Returns 'True' when no pair of numbers exists in the vector that
 -- sums up to the given target value.
 search :: Int -> UVector Int -> Bool
-search target haystack = null
-  [() | i <- [0   .. V.length haystack - 2]
-      , j <- [i+1 .. V.length haystack - 1]
-      , haystack V.! i + haystack V.! j == target]
+search target haystack = and
+  [ haystack V.! i + haystack V.! j /= target
+  | i <- [0   .. V.length haystack - 2]
+  , j <- [i+1 .. V.length haystack - 1]
+  ]
 
 -- | Find a number in the vector that is /not/ the sum of any pair of
 -- numbers in the 25 elements preceeding it.
