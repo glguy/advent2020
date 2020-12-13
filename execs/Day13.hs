@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Advent.Chinese      (chinese)
+import Advent.Chinese
 import Data.Ord            (comparing)
 import Data.List           (minimumBy)
 import Control.Applicative ((<|>))
