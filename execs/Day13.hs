@@ -1,4 +1,5 @@
 {-# Language OverloadedStrings #-}
+{-# Options_GHC -Wno-deprecations #-}
 {-|
 Module      : Main
 Description : Day 13 solution
@@ -12,24 +13,25 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Control.Applicative
-import Data.Maybe
-import Math.NumberTheory.Moduli.Chinese (chineseRemainder)
+import Control.Applicative ((<|>))
+import Data.Maybe (fromJust)
+import Math.NumberTheory.Moduli (chineseRemainder)
 
 busId :: Parser (Maybe Integer)
-busId = Nothing <$ "x" <|> Just <$> number
+busId = Nothing <$ "x" <|> Just <$> decimal
 
 schedule :: Parser [Maybe Integer]
 schedule = busId `sepBy` ","
 
 format :: Parser (Integer, [Maybe Integer])
-format = (,) <$> number <* "\n" <*> schedule <* "\n"
+format = (,) <$> decimal <* "\n" <*> schedule <* "\n"
 
 main :: IO ()
 main =
-  do (t,bs) <- getParsedInput 13 format
-     print $ uncurry (*) $ minimum       [ (target t b, b) |  Just b     <-     bs      ]
-     print $ fromJust $ chineseRemainder [ (target u b, b) | (Just b, u) <- zip bs [0..]]
+  do (t,rawBusses) <- getParsedInput 13 format
+     let busses = [(i,b) | (i, Just b) <- zip [0..] rawBusses]
+     print $ uncurry (*) $ minimum       [toMod (-t) b | (_,b) <- busses]
+     print $ fromJust $ chineseRemainder [toMod (-u) b | (u,b) <- busses]
 
-target :: Integer -> Integer -> Integer
-target t b = negate t `mod` b
+toMod :: Integer -> Integer -> (Integer, Integer)
+toMod r m = (r`mod`m, m)
