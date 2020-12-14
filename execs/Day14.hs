@@ -59,7 +59,7 @@ run2 mask mem (Mem k v   : xs) = run2 mask mem' xs
          $ msk2 k 35 mask
 
 msk2 :: Int -> Int -> [Mask] -> [Int]
-msk2 x i (I:xs) = [setBit y i | y <- msk2 x (i-1) xs]
+msk2 x i (I:xs) = msk2 (setBit x i) (i-1) xs
 msk2 x i (O:xs) = msk2 x (i-1) xs
 msk2 x i (X:xs) = [f y i | y <- msk2 x (i-1) xs, f <- [setBit, clearBit]]
 msk2 x _ []     = [x]
