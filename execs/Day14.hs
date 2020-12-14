@@ -55,11 +55,11 @@ run2 _    mem []               = mem
 run2 _    mem (Mask mask : xs) = run2 mask mem xs
 run2 mask mem (Mem k v   : xs) = run2 mask mem' xs
   where
-    mem' = foldl' (\m_ k_ -> IntMap.insert k_ v m_) mem ks
-    ks = msk2 [k] 35 mask
+    mem' = foldl' (\m_ k_ -> IntMap.insert k_ v m_) mem
+         $ msk2 k 35 mask
 
-msk2 :: [Int] -> Int -> [Mask] -> [Int]
-msk2 acc i (I:xs) = msk2 (map (`setBit` i) acc) (i-1) xs
-msk2 acc i (O:xs) = msk2 acc (i-1) xs
-msk2 acc i (X:xs) = msk2 (do a <- acc; [setBit a i, clearBit a i]) (i-1) xs
-msk2 acc _ []     = acc
+msk2 :: Int -> Int -> [Mask] -> [Int]
+msk2 x i (I:xs) = [setBit y i | y <- msk2 x (i-1) xs]
+msk2 x i (O:xs) = msk2 x (i-1) xs
+msk2 x i (X:xs) = [f y i | y <- msk2 x (i-1) xs, f <- [setBit, clearBit]]
+msk2 x _ []     = [x]
