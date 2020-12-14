@@ -40,6 +40,10 @@ instruction = (,) <$> opcode <* " " <*> number
 
 ------------------------------------------------------------------------
 
+-- |
+-- >>> :main
+-- 1200
+-- 1023
 main :: IO ()
 main =
   do cfg <- pgmToCfg <$> getParsedLines 8 instruction

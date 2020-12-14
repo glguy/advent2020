@@ -23,6 +23,10 @@ type Seating   = A.UArray Coord Char
 -- on the 'Seating' grid.
 type Neighbors = A.Array Coord [Int]
 
+-- |
+-- >>> :main
+-- 2211
+-- 1995
 main :: IO ()
 main =
   do inp <- getInputArray 11

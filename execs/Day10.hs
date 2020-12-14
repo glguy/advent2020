@@ -15,6 +15,10 @@ module Main (main) where
 import           Advent (getParsedLines, count, number)
 import           Data.List (sort)
 
+-- |
+-- >>> :main
+-- 1998
+-- 347250213298688
 main :: IO ()
 main =
   do adapters <- getParsedLines 10 number :: IO [Int]

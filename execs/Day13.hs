@@ -29,6 +29,10 @@ format :: Parser (Integer, [Maybe Integer])
 format = (,) <$> decimal  <* "\n"
              <*> schedule <* "\n"
 
+-- |
+-- >>> :main
+-- 3215
+-- 1001569619313439
 main :: IO ()
 main =
   do (t,rawBusses) <- getParsedInput 13 format

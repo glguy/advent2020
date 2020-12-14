@@ -32,6 +32,10 @@ mapHere, mapVect :: Update Sim Coord
 mapHere f s = s { here = f (here s) }
 mapVect f s = s { vect = f (vect s) }
 
+-- |
+-- >>> :main
+-- 1007
+-- 41212
 main :: IO ()
 main =
   do inp <- getParsedLines 12 command

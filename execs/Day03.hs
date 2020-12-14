@@ -11,11 +11,15 @@ Maintainer  : emertens@gmail.com
 Sledding down a slope counting trees.
 
 -}
-module Main  where
+module Main where
 
 import Advent
 import qualified Data.Vector.Generic as V
 
+-- |
+-- >>> :main
+-- 240
+-- 2832009600
 main :: IO ()
 main =
   do inp <- getInputVector 3

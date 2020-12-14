@@ -15,6 +15,10 @@ module Main (main) where
 import Advent
 import Data.List (sort)
 
+-- |
+-- >>> :main
+-- 951
+-- 653
 main :: IO ()
 main =
   do inp <- getInputLines 5

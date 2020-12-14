@@ -27,6 +27,10 @@ type Passport = [Field]
 entry :: Parser Field
 entry = (,) <$> some letterChar <* ":" <*> manyTill anySingle (satisfy isSpace)
 
+-- |
+-- >>> :main
+-- 245
+-- 133
 main :: IO ()
 main =
   do inp <- getParsedInput 4 (many entry `sepBy` "\n")

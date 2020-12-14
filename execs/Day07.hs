@@ -38,6 +38,10 @@ rule = (,) <$> bag <* " contain " <*> bagss <* ".\n"
 
 ------------------------------------------------------------------------
 
+-- |
+-- >>> :main
+-- 268
+-- 7867
 main :: IO ()
 main =
   do rules <- getParsedInput 7 (many rule)
