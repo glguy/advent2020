@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 3 solution
@@ -14,7 +14,7 @@ Sledding down a slope counting trees.
 module Main where
 
 import Advent
-import qualified Data.Vector.Generic as V
+import Data.Vector.Generic qualified as V
 
 -- |
 -- >>> :main

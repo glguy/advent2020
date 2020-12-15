@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language OverloadedStrings, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -11,10 +11,10 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent
-import           Control.Applicative
-import           Data.Maybe (fromJust, mapMaybe)
-import qualified Data.Graph.Inductive as G
+import Advent
+import Control.Applicative
+import Data.Maybe (fromJust, mapMaybe)
+import Data.Graph.Inductive qualified as G
 
 -- | Programs are expressed as control-flow graphs.
 --

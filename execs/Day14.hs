@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language ImportQualifiedPost, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 14 solution
@@ -35,13 +35,13 @@ in run2 [] IntMap.empty cmds
 
 module Main where
 
-import           Advent
-import           Control.Applicative
-import           Control.Monad (replicateM)
-import           Data.List (foldl')
-import           Data.IntMap (IntMap)
-import qualified Data.IntMap as IntMap
-import           Data.Bits (setBit, clearBit)
+import Advent
+import Control.Applicative
+import Control.Monad (replicateM)
+import Data.List (foldl')
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
+import Data.Bits (setBit, clearBit)
 
 data Cmd = Mask [Mask] | Mem Int Int deriving (Show)
 

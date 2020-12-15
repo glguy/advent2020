@@ -1,5 +1,3 @@
-{-# Language OverloadedStrings #-}
-{-# Language BangPatterns #-}
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -12,8 +10,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent (getParsedLines, count, number)
-import           Data.List (sort)
+import Advent (getParsedLines, count, number)
+import Data.List (sort)
 
 -- |
 -- >>> :main

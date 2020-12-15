@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 11 solution
@@ -11,11 +11,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent
-import           Advent.Coord
-import           Data.Maybe (mapMaybe)
-import qualified Data.Array.Unboxed as A
-import qualified Data.Array.Base as AB
+import Advent
+import Advent.Coord
+import Data.Maybe (mapMaybe)
+import Data.Array.Unboxed qualified as A
+import Data.Array.Base qualified as AB
 
 type Seating   = A.UArray Coord Char
 

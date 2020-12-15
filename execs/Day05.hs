@@ -1,5 +1,3 @@
-{-# Language OverloadedStrings #-}
-{-# Options_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 5 solution

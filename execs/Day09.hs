@@ -1,3 +1,4 @@
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -10,8 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent (UVector, getParsedLines, decimal)
-import qualified Data.Vector.Generic as V
+import Advent (UVector, getParsedLines, decimal)
+import Data.Vector.Generic qualified as V
 
 -- |
 -- >>> :main

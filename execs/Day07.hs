@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language ImportQualifiedPost, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 7 solution
@@ -16,10 +16,10 @@ gold bag.
 -}
 module Main (main) where
 
-import           Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, löb)
-import           Control.Applicative (many, some, optional, (<|>))
-import           Data.Map (Map)
-import qualified Data.Map as Map
+import Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, löb)
+import Control.Applicative (many, some, optional, (<|>))
+import Data.Map (Map)
+import Data.Map qualified as Map
 
 type Bag = String
 type Rule = (Bag, [(Int, Bag)])

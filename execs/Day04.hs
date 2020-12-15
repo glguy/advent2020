@@ -13,13 +13,13 @@ Passport validation
 -}
 module Main (main) where
 
-import           Advent
-import           Control.Applicative
-import           Control.Monad
-import           Data.Char (isSpace, isAlpha, isDigit)
-import           Data.List (delete, sort)
-import           Data.Maybe (isJust)
-import           Text.Read (readMaybe)
+import Advent
+import Control.Applicative
+import Control.Monad
+import Data.Char (isSpace, isAlpha, isDigit)
+import Data.List (delete, sort)
+import Data.Maybe (isJust)
+import Text.Read (readMaybe)
 
 type Field = (String, String)
 type Passport = [Field]
