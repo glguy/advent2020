@@ -14,7 +14,7 @@ module Main (main) where
 import Advent
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
-import Data.Array.ST (Ix, MArray, STUArray, newArray, readArray, writeArray)
+import Data.Primitive.PrimArray
 import Data.Int (Int32)
 
 -- | Type of elements in our sequence -- big enough to hold 30 million
@@ -34,21 +34,23 @@ game ::
   T   {- ^ desired position -} ->
   T   {- ^ desired element  -}
 game xs n = runST
-  do a <- newArray (0, maximum (n:xs)) 0
-     zipWithM_ (writeArray a) (init xs) [1..]
+  do let len = fromIntegral (maximum (n:xs))
+     a <- newPrimArray len
+     setPrimArray a 0 len 0
+     zipWithM_ (writePrimArray a) (fromIntegral <$> Prelude.init xs) [1..]
      speak a n (fromIntegral (length xs)) (last xs)
 
 speak ::
-  STUArray s T T {- ^ position of last occurrence -} ->
-  T              {- ^ desired position            -} ->
-  T              {- ^ current position            -} ->
-  T              {- ^ current element             -} ->
-  ST s T         {- ^ desired element             -}
+  MutablePrimArray s T {- ^ position of last occurrence -} ->
+  T      {- ^ desired position -} ->
+  T      {- ^ current position -} ->
+  T      {- ^ current element  -} ->
+  ST s T {- ^ desired element  -}
 speak a n m x
   | m == n    = pure $! x
-  | otherwise = do v <- exchange a x m
+  | otherwise = do v <- exchange a (fromIntegral x) m
                    speak a n (m+1) (if v == 0 then 0 else m-v)
 
 -- | Exchange element at an index with a new element returning old element.
-exchange :: (Ix i, MArray a e m) => a i e -> i -> e -> m e
-exchange a i x = readArray a i <* writeArray a i x
+exchange :: MutablePrimArray s T -> Int -> T -> ST s T
+exchange a i x = readPrimArray a i <* writePrimArray a i x
