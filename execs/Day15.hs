@@ -15,6 +15,10 @@ import Advent
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
 import Data.Array.ST (Ix, MArray, STUArray, newArray, readArray, writeArray)
+import Data.Word (Word32)
+
+-- | Type of elements in our sequence -- big enough to hold 30 million
+type T = Word32
 
 -- |
 -- >>> game [10,16,6,0,1,17] 2020
@@ -26,20 +30,20 @@ main =
      print (game inp 30_000_000)
 
 game ::
-  [Int] {- ^ initial sequence -} ->
-  Int   {- ^ desired position -} ->
-  Int   {- ^ desired element  -}
+  [T] {- ^ initial sequence -} ->
+  T   {- ^ desired position -} ->
+  T   {- ^ desired element  -}
 game xs n = runST
   do a <- newArray (0, maximum (n:xs)) 0
      zipWithM_ (writeArray a) (init xs) [1..]
-     speak a n (length xs) (last xs)
+     speak a n (fromIntegral (length xs)) (last xs)
 
 speak ::
-  STUArray s Int Int {- ^ position of last occurrence -} ->
-  Int                {- ^ desired position            -} ->
-  Int                {- ^ current position            -} ->
-  Int                {- ^ current element             -} ->
-  ST s Int           {- ^ desired element             -}
+  STUArray s T T {- ^ position of last occurrence -} ->
+  T              {- ^ desired position            -} ->
+  T              {- ^ current position            -} ->
+  T              {- ^ current element             -} ->
+  ST s T         {- ^ desired element             -}
 speak a n m x
   | m == n    = pure $! x
   | otherwise = do v <- exchange a x m
