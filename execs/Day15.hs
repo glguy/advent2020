@@ -14,7 +14,7 @@ module Main (main) where
 import Advent
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
-import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPrimArray, setPrimArray)
+import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPinnedPrimArray, setPrimArray)
 import Data.Int (Int32)
 
 -- | Type of elements in our sequence -- big enough to hold 30 million
@@ -35,7 +35,7 @@ game ::
   T   {- ^ desired element  -}
 game xs n = runST
   do let len = fromIntegral (maximum (n:xs))
-     a <- newPrimArray len
+     a <- newPinnedPrimArray len
      setPrimArray a 0 len 0
      zipWithM_ (writePrimArray a) (fromIntegral <$> Prelude.init xs) [1..]
      speak a n (fromIntegral (length xs)) (last xs)
