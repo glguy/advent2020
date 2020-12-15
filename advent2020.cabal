@@ -25,17 +25,20 @@ library
 
   exposed-modules:
     Advent
+    Advent.Bench
+    Advent.Chinese
     Advent.Coord
     Advent.PQueue
-    Advent.Search
     Advent.Queue
+    Advent.Search
     Advent.Visualize
-    Advent.Chinese
 
   build-depends:
     base         ^>= 4.14,
     array        ^>= 0.5.4,
     containers   ^>= 0.6,
+    criterion    ^>= 1.5.9,
+    deepseq      ^>= 1.4,
     JuicyPixels  ^>= 3.3.2,
     megaparsec   ^>= 9.0,
     vector       ^>= 0.12,
