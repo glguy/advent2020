@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, BlockArguments, OverloadedStrings #-}
+{-# Language BlockArguments, ImportQualifiedPost, NumericUnderscores, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 15 solution
@@ -22,8 +22,8 @@ import Data.Array.ST qualified as A
 main :: IO ()
 main =
   do inp <- getParsedInput 15 (decimal `sepBy` ",")
-     print (game inp 2020    )
-     print (game inp 30000000)
+     print (game inp      2_020)
+     print (game inp 30_000_000)
 
 game ::
   [Int] {- ^ initial sequence -} ->
