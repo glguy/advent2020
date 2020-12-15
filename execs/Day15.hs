@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ImportQualifiedPost, NumericUnderscores, OverloadedStrings #-}
+{-# Language BlockArguments, NumericUnderscores, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 15 solution
@@ -14,7 +14,7 @@ module Main (main) where
 import Advent
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
-import Data.Primitive.PrimArray
+import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPrimArray, setPrimArray)
 import Data.Int (Int32)
 
 -- | Type of elements in our sequence -- big enough to hold 30 million
