@@ -15,10 +15,10 @@ import Advent
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
 import Data.Array.ST (Ix, MArray, STUArray, newArray, readArray, writeArray)
-import Data.Word (Word32)
+import Data.Int (Int32)
 
 -- | Type of elements in our sequence -- big enough to hold 30 million
-type T = Word32
+type T = Int32
 
 -- |
 -- >>> game [10,16,6,0,1,17] 2020
