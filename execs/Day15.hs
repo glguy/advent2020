@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, BangPatterns #-}
+{-# Language OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 15 solution
@@ -13,19 +13,25 @@ module Main (main) where
 
 import           Advent
 import           Data.IntMap (IntMap)
-import qualified Data.IntMap as IntMap
+import qualified Data.IntMap.Strict as IntMap
 
 main :: IO ()
 main =
-  do inp <- getParsedInput 15 (decimal `sepBy` "," <* "\n")
-     let start = (last inp, length inp-1, IntMap.fromList (zip (init inp) [0..]))
-     print $ (\(x,_,_)->x) $ searchN (    2020-length inp) start
-     print $ (\(x,_,_)->x) $ searchN (30000000-length inp) start
+  do inp <- start <$> getParsedInput 15 (decimal `sepBy` "," <* "\n")
+     print $ prev $ steps (    2020-position inp-1) inp
+     print $ prev $ steps (30000000-position inp-1) inp
 
-searchN 0 !x = x
-searchN n !x = searchN (n-1) (search x)
+steps 0 x = x
+steps n x = steps (n-1) $! step x
 
-search (!a,!p,!seen) =
-  case IntMap.lookup a seen of
-    Nothing -> (0  , p+1, IntMap.insert a p seen)
-    Just x  -> (p-x, p+1, IntMap.insert a p seen)
+data State = State { prev :: !Int, position :: !Int, seen :: !(IntMap Int) }
+
+start :: [Int] -> State
+start (x:xs) = foldl f (State x 0 IntMap.empty) xs
+  where f (State a p seen) x = State x (p+1) (IntMap.insert a p seen)
+
+step :: State -> State
+step (State a p seen) =
+  State (maybe 0 (p-) (IntMap.lookup a seen))
+        (p+1)
+        (IntMap.insert a p seen)
