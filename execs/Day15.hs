@@ -1,4 +1,4 @@
-{-# Language BangPatterns, BlockArguments, OverloadedStrings #-}
+{-# Language ImportQualifiedPost, BlockArguments, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 15 solution
@@ -11,11 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent
-import qualified Data.Array.ST as A
-import           Control.Monad.ST (ST, runST)
-import           Control.Monad (zipWithM_)
+import Advent
+import Control.Monad (zipWithM_)
+import Control.Monad.ST (ST, runST)
+import Data.Array.ST qualified as A
 
+-- |
+-- >>> game [10,16,6,0,1,17] 2020
+-- 412
 main :: IO ()
 main =
   do inp <- getParsedInput 15 (decimal `sepBy` ",")
@@ -37,11 +40,11 @@ speak ::
   Int                  {- ^ current position            -} ->
   Int                  {- ^ current element             -} ->
   ST s Int             {- ^ desired element             -}
-speak a n m !x
-  | m == n    = pure x
-  | otherwise = do v <- swapArray a x m
+speak a n m x
+  | m == n    = pure $! x
+  | otherwise = do v <- exchange a x m
                    speak a n (m+1) (if v == 0 then 0 else m-v)
 
--- | Replace element at an index with a new element returning old element.
-swapArray :: (A.Ix i, A.MArray a e m) => a i e -> i -> e -> m e
-swapArray a i x = A.readArray a i <* A.writeArray a i x
+-- | Exchange element at an index with a new element returning old element.
+exchange :: (A.Ix i, A.MArray a e m) => a i e -> i -> e -> m e
+exchange a i x = A.readArray a i <* A.writeArray a i x
