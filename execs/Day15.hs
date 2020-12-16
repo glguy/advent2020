@@ -34,7 +34,7 @@ game ::
   T   {- ^ desired position -} ->
   T   {- ^ desired element  -}
 game xs n = runST
-  do let len = fromIntegral (maximum (n:xs))
+  do let len = fromIntegral (max n (1 + last xs))
      a <- newPinnedPrimArray len
      setPrimArray a 0 len 0
      zipWithM_ (writePrimArray a) (fromIntegral <$> Prelude.init xs) [1..]
