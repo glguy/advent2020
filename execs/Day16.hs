@@ -1,4 +1,5 @@
 {-# Language ImportQualifiedPost, OverloadedStrings #-}
+{-# Options_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -17,16 +18,16 @@ import Data.List (delete, isPrefixOf, sortOn, transpose)
 
 data Range = Range Int Int deriving Show
 
-data Field = Field String Range Range deriving Show
+data Field = Field String [Range] deriving Show
 
 fieldName :: Field -> String
-fieldName (Field n _ _) = n
+fieldName (Field n _) = n
 
-match1 :: Range -> Int -> Bool
-match1 (Range lo hi) x = lo <= x && x <= hi
+match1 :: Int -> Range -> Bool
+match1 x (Range lo hi) = lo <= x && x <= hi
 
 match :: Field -> Int -> Bool
-match (Field _ x y) z = match1 x z || match1 y z
+match (Field _ rs) x = any (match1 x) rs
 
 ------------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ pRange = Range <$> decimal <* "-" <*> decimal
 
 pField :: Parser Field
 pField = Field <$> some (satisfy (\s -> 'a' <= s && s <= 'z' || s == ' ')) <* ": "
-               <*> pRange <* " or " <*> pRange
+               <*> pRange `sepBy` " or "
 
 pTicket :: Parser [Int]
 pTicket = decimal `sepBy` ","
@@ -54,8 +55,7 @@ main =
 
      print (sum [x | xs <- nearbyTickets, x <- xs, not (any (`match` x) fields)])
 
-     let good = yourTicket
-              : [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
+     let good = [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
 
      let possible
            = sortOn (length . snd)
