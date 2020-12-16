@@ -16,18 +16,15 @@ import Advent
 import Control.Applicative (some)
 import Data.List (delete, isPrefixOf, sortOn, transpose)
 
-data Range = Range Int Int deriving Show
+data Range = Range { lo, hi :: Int } deriving Show
 
-data Field = Field String [Range] deriving Show
-
-fieldName :: Field -> String
-fieldName (Field n _) = n
+data Field = Field { fieldName :: String, fieldRange :: [Range] } deriving Show
 
 match1 :: Int -> Range -> Bool
-match1 x (Range lo hi) = lo <= x && x <= hi
+match1 x r = lo r <= x && x <= hi r
 
 match :: Field -> Int -> Bool
-match (Field _ rs) x = any (match1 x) rs
+match field x = any (match1 x) (fieldRange field)
 
 ------------------------------------------------------------------------
 
@@ -53,19 +50,24 @@ main :: IO ()
 main =
   do (fields, yourTicket, nearbyTickets) <- getParsedInput 16 format
 
-     print (sum [x | xs <- nearbyTickets, x <- xs, not (any (`match` x) fields)])
+     -- print sum of invalid fields
+     print $ sum [x | xs <- nearbyTickets, x <- xs, not (any (`match` x) fields)]
 
-     let good = [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
+     let goodTickets = [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
 
-     let possible
-           = sortOn (length . snd)
-           $ zip yourTicket
-                 [ [fieldName field | field <- fields, all (match field) col]
-                 | col <- transpose good]
+         possibleFields col = [fieldName field | field <- fields, all (match field) col]
 
-     print (product [i | (i, name) <- head (search possible)
-                       , "departure" `isPrefixOf` name])
+         allCandidates = [possibleFields col | col <- transpose goodTickets]
 
+         -- pair up my ticket's field values with the candidate field names
+         constraints :: [(Int, [String])]
+         constraints = sortOn (length . snd) (zip yourTicket allCandidates)
+
+     print $ product [i | (i, name) <- head (search constraints)
+                        , "departure" `isPrefixOf` name]
+
+-- | Find an way to choose a single @b@ from each list such that
+-- all the chosen elements are unique.
 search :: Eq b => [(a, [b])] -> [[(a,b)]]
 search [] = [[]]
 search ((i,names):xs) =
