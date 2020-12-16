@@ -12,12 +12,9 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Control.Applicative
-import Data.Set (Set)
-import Data.Set qualified as Set
-import Data.List
-import Data.Char
-import Data.Ord
+import Control.Applicative (some)
+import Data.List (delete, isPrefixOf, sortBy, transpose)
+import Data.Ord (comparing)
 
 data Range = Range Int Int deriving Show
 
@@ -26,11 +23,20 @@ data Field = Field String Range Range deriving Show
 fieldName :: Field -> String
 fieldName (Field n _ _) = n
 
+match1 :: Range -> Int -> Bool
+match1 (Range lo hi) x = lo <= x && x <= hi
+
+match :: Field -> Int -> Bool
+match (Field _ x y) z = match1 x z || match1 y z
+
+------------------------------------------------------------------------
+
 pRange :: Parser Range
 pRange = Range <$> decimal <* "-" <*> decimal
 
 pField :: Parser Field
-pField = Field <$> some (satisfy (\s -> isAlpha s || s == ' ')) <* ": " <*> pRange <* " or " <*> pRange
+pField = Field <$> some (satisfy (\s -> 'a' <= s && s <= 'z' || s == ' ')) <* ": "
+               <*> pRange <* " or " <*> pRange
 
 pTicket :: Parser [Int]
 pTicket = decimal `sepBy` ","
@@ -41,38 +47,30 @@ format =
        <*> pTicket             <* "\n\nnearby tickets:\n"
        <*> pTicket `endBy` "\n"
 
+------------------------------------------------------------------------
+
 main :: IO ()
 main =
   do (fields, yourTicket, nearbyTickets) <- getParsedInput 16 format
 
-     print (sum [ x | xs <- nearbyTickets, x <- xs
-                    , not (any (\field -> match field x) fields)])
+     print (sum [x | xs <- nearbyTickets, x <- xs, not (any (`match` x) fields)])
 
-     let good = [ xs | xs <- nearbyTickets
-                     , all (\x -> any (\field -> match field x) fields) xs]
+     let good = yourTicket
+              : [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
 
      let possible
            = sortBy (comparing (length . snd))
-           $ zip [0::Int ..]
+           $ zip yourTicket
                  [ [fieldName field | field <- fields, all (match field) col]
-                 | col <- transpose good ]
+                 | col <- transpose good]
 
-     let mapping = head (search Set.empty possible)
+     print (product [i | (i, name) <- head (search possible)
+                       , "departure" `isPrefixOf` name])
 
-     print (product [yourTicket !! i
-                    | (i, name) <- mapping, "departure" `isPrefixOf` name])
-
-match1 :: Range -> Int -> Bool
-match1 (Range lo hi) x = lo <= x && x <= hi
-
-match :: Field -> Int -> Bool
-match (Field _ x y) z = match1 x z || match1 y z
-
-search :: Ord a => Set a -> [(Int, [a])] -> [[(Int,a)]]
-search _     []         = [[]]
-search seen ((i,names):xs) =
-  [ (i, name):rest
+search :: Eq b => [(a, [b])] -> [[(a,b)]]
+search [] = [[]]
+search ((i,names):xs) =
+  [ (i,name):rest
   | name <- names
-  , Set.notMember name seen
-  , rest <- search (Set.insert name seen) xs
+  , rest <- search [(a, delete name b) | (a,b) <- xs]
   ]
