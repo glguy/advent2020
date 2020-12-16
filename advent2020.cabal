@@ -150,6 +150,6 @@ executable Day15
 
 executable Day16
   main-is:             Day16.hs
-  build-depends:       advent2020, base
+  build-depends:       advent2020, base, containers
   hs-source-dirs:      execs
   default-language:    Haskell2010
