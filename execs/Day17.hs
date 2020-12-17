@@ -1,4 +1,4 @@
-{-# Language BlockArguments #-}
+{-# Language ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 17 solution
@@ -11,9 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import           Advent
-import           Data.Set (Set)
-import qualified Data.Set as Set
+import Advent
+import Advent.Bench
+import Data.Set (Set)
+import Data.Set qualified as Set
+import Data.Map (Map)
+import Data.Map.Strict qualified as Map
 
 -- | N-dimensional coordinates
 type C = [Int]
@@ -38,12 +41,9 @@ neighborhood = tail . traverse \i -> [i,i-1,i+1]
 
 step :: Set C -> Set C
 step world
-  = Set.filter (rule world)
-  $ Set.fromList
-  $ concatMap neighborhood
-  $ Set.toList world
+  = Map.keysSet
+  $ Map.filterWithKey (rule world)
+  $ Map.fromListWith (+) [(n,1) | s <- Set.toList world, n <- neighborhood s]
 
-rule :: Set C -> C -> Bool
-rule world c = i == 3 || i == 2 && Set.member c world
-  where
-    i = length (take 4 (filter (`Set.member` world) (neighborhood c)))
+rule :: Set C -> C -> Int -> Bool
+rule world c i = i == 3 || i == 2 && Set.member c world
