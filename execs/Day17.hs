@@ -40,8 +40,6 @@ step world
   $ Set.toList world
 
 rule :: Set C -> C -> Bool
-rule world c
-  | Set.member c world = i == 3 || i == 4
-  | otherwise          = i == 3
+rule world c = i == 3 || i == 4 && Set.member c world
   where
     i = length (take 5 (filter (`Set.member` world) (neighborhood c)))
