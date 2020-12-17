@@ -38,7 +38,7 @@ search target haystack = and
   ]
 
 -- | Find a number in the vector that is /not/ the sum of any pair of
--- numbers in the 25 elements preceeding it.
+-- numbers in the 25 elements preceding it.
 part1 :: UVector Int -> Int
 part1 v
   | search (v V.! 25) (V.take 25 v) = v V.! 25

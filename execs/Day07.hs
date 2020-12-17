@@ -9,7 +9,7 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2020/day/7>
 
 The problem gives us a list of rules about the immediate contents
-of each color of bag. We use this to compute the tnrasitive
+of each color of bag. We use this to compute the transitive
 closure of bag contents in order to answer queries about a shiny
 gold bag.
 

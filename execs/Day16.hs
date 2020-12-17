@@ -1,5 +1,4 @@
 {-# Language ImportQualifiedPost, OverloadedStrings #-}
-{-# Language DeriveTraversable #-}
 {-# Options_GHC -w #-}
 {-|
 Module      : Main

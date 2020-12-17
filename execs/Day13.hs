@@ -9,7 +9,7 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2020/day/13>
 
 While the general case of part2 can be solved efficiently with
-the chinese remainder theorem, this local implementation is
+the Chinese remainder theorem, this local implementation is
 much more straight-forward.
 
 -}

@@ -57,7 +57,7 @@ lineOfSight a = A.listArray b [mapMaybe (look i) (neighbors origin) | i <- A.ran
            '.' -> look j d
            _   -> Just (A.index b j)
 
--- | Advance the seating grid one timestep using a configurable
+-- | Advance the seating grid one time step using a configurable
 -- threshold for seats becoming unoccupied, a precomputed neighborhood,
 -- and the current seating chart. Return 'Nothing' when nothing changes.
 adv ::
