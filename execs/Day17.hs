@@ -12,8 +12,10 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
+import Control.Monad (replicateM)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 
 -- | N-dimensional coordinates
@@ -33,24 +35,32 @@ parse input = [[x,y] | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
 main :: IO ()
 main =
   do inp <- parse <$> getInputLines 17
-     let run x = print (Set.size (times 6 step (Set.fromList x)))
-         up = map (0:)
-     run (up inp)
-     run (up (up inp))
+     print (run 3 inp)
+     print (run 4 inp)
 
--- | Compute distance 1 neighborhood around a coordinate.
+run ::
+  Int     {- ^ dimension                      -} ->
+  [[Int]] {- ^ input x,y coordinates          -} ->
+  Int     {- ^ live cells after 6 generations -}
+run d
+  = Set.size
+  . times 6 (step (neighborhood d))
+  . Set.mapMonotonic (replicate (d-2) 0 ++)
+  . Set.fromList
+
+-- | Compute distance 1 neighborhood around the origin for a given dimension.
 --
--- >>> neighborhood [10,20]
--- [[10,19],[10,21],[9,20],[9,19],[9,21],[11,20],[11,19],[11,21]]
-neighborhood :: C -> [C]
-neighborhood = tail . traverse \i -> [i,i-1,i+1]
+-- >>> neighborhood 2
+-- fromList [([-1,-1],1),([-1,0],1),([-1,1],1),([0,-1],1),([0,1],1),([1,-1],1),([1,0],1),([1,1],1)]
+neighborhood :: Int -> Map C Int
+neighborhood d = Map.fromList [(c,1) | c <- tail (replicateM d [0,-1,1])]
 
 -- | Compute the next generation from the previous generation
-step :: Set C -> Set C
-step world
+step :: Map C Int -> Set C -> Set C
+step d world
   = Map.keysSet
   $ Map.filterWithKey (rule world)
-  $ cardinality [n | s <- Set.toList world, n <- neighborhood s]
+  $ Map.unionsWith (+) [Map.mapKeysMonotonic (zipWith (+) s) d | s <- Set.toList world ]
 
 -- | Determine if a cell should be alive in the next generation.
 rule ::
