@@ -21,6 +21,10 @@ import Data.Map.Strict qualified as Map
 -- | N-dimensional coordinates
 type C = [Int]
 
+-- | Find the coordinates of live cells.
+--
+-- >>> parse [".#.", "..#", "###"]
+-- [[1,0],[2,1],[0,2],[1,2],[2,2]]
 parse :: [String] -> [C]
 parse input = [[x,y] | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
 
@@ -36,14 +40,24 @@ main =
      run (up inp)
      run (up (up inp))
 
+-- | Compute distance 1 neighborhood around a coordinate.
+--
+-- >>> neighborhood [10,20]
+-- [[10,19],[10,21],[9,20],[9,19],[9,21],[11,20],[11,19],[11,21]]
 neighborhood :: C -> [C]
 neighborhood = tail . traverse \i -> [i,i-1,i+1]
 
+-- | Compute the next generation from the previous generation
 step :: Set C -> Set C
 step world
   = Map.keysSet
   $ Map.filterWithKey (rule world)
   $ Map.fromListWith (+) [(n,1) | s <- Set.toList world, n <- neighborhood s]
 
-rule :: Set C -> C -> Int -> Bool
-rule world c i = i == 3 || i == 2 && Set.member c world
+-- | Determine if a cell should be alive in the next generation.
+rule ::
+  Set C {- ^ previous generation      -} ->
+  C     {- ^ coordinate               -} ->
+  Int   {- ^ live neighbor count      -} ->
+  Bool  {- ^ alive in next generation -}
+rule world c n = n == 3 || n == 2 && Set.member c world
