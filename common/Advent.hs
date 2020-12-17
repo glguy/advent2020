@@ -17,7 +17,7 @@ import Data.List
 import Advent.Coord
 import qualified Data.Set as Set
 import           Data.Map (Map)
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as SMap
 import qualified Data.Vector as Vector
 import qualified Data.Vector.Unboxed as UVector
 import qualified Data.Array.Unboxed as A
@@ -147,7 +147,7 @@ minimumMaybe xs
 -- >>> cardinality "bababc"
 -- fromList [('a',2),('b',3),('c',1)]
 cardinality :: Ord a => [a] -> Map a Int
-cardinality xs = Map.fromListWith (+) [ (x,1) | x <- xs ]
+cardinality xs = SMap.fromListWith (+) [ (x,1) | x <- xs ]
 
 -- | Compose a list of functions together
 --

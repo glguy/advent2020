@@ -12,10 +12,8 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Advent.Bench
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 
 -- | N-dimensional coordinates
@@ -52,7 +50,7 @@ step :: Set C -> Set C
 step world
   = Map.keysSet
   $ Map.filterWithKey (rule world)
-  $ Map.fromListWith (+) [(n,1) | s <- Set.toList world, n <- neighborhood s]
+  $ cardinality [n | s <- Set.toList world, n <- neighborhood s]
 
 -- | Determine if a cell should be alive in the next generation.
 rule ::
