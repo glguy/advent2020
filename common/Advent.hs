@@ -178,3 +178,9 @@ arrIx :: (A.IArray a e, A.Ix i) => a i e -> i -> Maybe e
 arrIx a i
   | A.inRange (A.bounds a) i = Just $! a A.! i
   | otherwise = Nothing
+
+-- | Apply a function @n@ times strictly.
+times :: Int -> (a -> a) -> a -> a
+times n f x
+  | n <= 0    = x
+  | otherwise = times (n-1) f $! f x

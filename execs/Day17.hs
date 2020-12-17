@@ -33,7 +33,7 @@ parse input = [[x,y] | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
 main :: IO ()
 main =
   do inp <- parse <$> getInputLines 17
-     let run x = print (Set.size (iterate step (Set.fromList x) !! 6))
+     let run x = print (Set.size (times 6 step (Set.fromList x)))
          up = map (0:)
      run (up inp)
      run (up (up inp))

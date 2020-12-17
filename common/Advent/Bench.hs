@@ -12,6 +12,11 @@ module Advent.Bench (NFData(rnf), benchMain) where
 import Control.DeepSeq
 import Criterion.Main
 import System.Environment
+import Data.Array.Unboxed as A
+
+instance NFData (A.UArray i e) where
+  rnf x = seq x ()
+
 
 benchMain ::
   NFData a =>

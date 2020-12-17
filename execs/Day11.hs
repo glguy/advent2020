@@ -69,7 +69,7 @@ adv t ns a
   | null changes = Nothing
   | otherwise    = Just $! a A.// changes
   where
-    changes = [(i, v) | i <- A.range (A.bounds a), v <- valueAt i]
+    changes = [(i, v) | (i, e) <- A.assocs a, v <- valueAt i e]
 
     -- returns True when /at least/ n neighbors are occupied
     occupied :: Int -> Coord -> Bool
@@ -82,8 +82,6 @@ adv t ns a
         '#' -> occupied1 (n-1) is
         _   -> occupied1 n is
 
-    valueAt i =
-      case a A.! i of
-        '#' | occupied t i       -> "L"
-        'L' | not (occupied 1 i) -> "#"
-        _ -> []
+    valueAt i '#' | occupied t i       = "L"
+    valueAt i 'L' | not (occupied 1 i) = "#"
+    valueAt _ _                        = ""
