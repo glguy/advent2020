@@ -47,5 +47,5 @@ solve' ::
   Int   {- ^ next alternative -} ->
   Int   {- ^ final product    -}
 solve' _      0 0 p _ = p
-solve' (x:xs) n s p e | x <= s = solve' xs (n-1) (s-x) (p*x) (solve' xs n s p e)
+solve' (x:xs) n s p e | 0 < n, x <= s = solve' xs (n-1) (s-x) (p*x) (solve' xs n s p e)
 solve' _      _ _ _ e = e
