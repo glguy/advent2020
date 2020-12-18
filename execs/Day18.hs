@@ -30,14 +30,12 @@ add, mul :: Parser (Expr -> Expr -> Expr)
 add = Add <$ " + "
 mul = Mul <$ " * "
 
-expr1, expr2, aexpr1, aexpr2, bexpr2 :: Parser Expr
+aexpr :: Parser Expr -> Parser Expr
+aexpr top = Lit <$> decimal <|> "(" *> top <* ")"
 
-aexpr2 = Lit <$> decimal <|> "(" *> expr2 <* ")"
-bexpr2 = chainl1 aexpr2 add
-expr2  = chainl1 bexpr2 mul
-
-aexpr1 = Lit <$> decimal <|> "(" *> expr1 <* ")"
-expr1  = chainl1 aexpr1 (add <|> mul)
+expr1, expr2 :: Parser Expr
+expr1 = chainl1 (aexpr expr1) (add <|> mul)
+expr2 = chainl1 (chainl1 (aexpr expr2) add) mul
 
 eval :: Expr -> Integer
 eval (Add x y) = eval x + eval y
