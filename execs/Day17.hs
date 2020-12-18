@@ -92,6 +92,8 @@ step neighbor world
   $ map neighbor
   $ Set.toList world
 
+-- List-based coordinates ----------------------------------------------
+
 -- | Given a dimension and a coordinate this produces a map of all the
 -- neighboring cells with values of @1@.
 neighborCountN :: Int -> [Int] -> Map [Int] Int
@@ -99,7 +101,7 @@ neighborCountN d =
   let ns = Map.fromList [(c,1) | c <- tail (replicateM d [0,-1,1])]
   in \c -> Map.mapKeysMonotonic (zipWith (+) c) ns
 
--- Unpacked, custom tuples improves my runtime by a factor of 3 over the list of Int version
+-- Unpacked 3-tuples ---------------------------------------------------
 
 data C3 = C3 !Int !Int !Int      deriving (Eq, Ord)
 
@@ -112,7 +114,7 @@ neighborCount3 =
   let ns = Map.fromList [(C3 x y z,1) | [x,y,z] <- tail (replicateM 3 [0,-1,1])]
   in \(C3 a b c) -> Map.mapKeysMonotonic (\(C3 x y z) -> C3 (a+x) (b+y) (c+z)) ns
 
-------------------------------------------------------------------------
+-- Unpacked 4-tuples ---------------------------------------------------
 
 data C4 = C4 !Int !Int !Int !Int deriving (Eq, Ord)
 
