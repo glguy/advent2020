@@ -31,7 +31,7 @@ library
     Advent.PQueue
     Advent.Queue
     Advent.Search
-    Advent.Visualize
+    --Advent.Visualize
 
   build-depends:
     base         ^>= 4.14,
@@ -39,10 +39,10 @@ library
     containers   ^>= 0.6,
     criterion    ^>= 1.5.9,
     deepseq      ^>= 1.4,
-    JuicyPixels  ^>= 3.3.2,
     megaparsec   ^>= 9.0,
     vector       ^>= 0.12,
     integer-gmp  ^>= 1.0,
+    --JuicyPixels  ^>= 3.3.2,
 
 
 test-suite doctests
