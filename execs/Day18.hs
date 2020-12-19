@@ -40,10 +40,6 @@ main =
 -- parser combinators solution -----------------------------------------
 ------------------------------------------------------------------------
 
--- zero or more spaces
-spaces :: Parser ()
-spaces = " " *> spaces <|> pure ()
-
 -- lexemes are responsible for consuming trailing spaces
 l :: Parser a -> Parser a
 l p = p <* spaces
