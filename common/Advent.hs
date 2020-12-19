@@ -88,9 +88,6 @@ parseLines p input =
   where
     parse1 x = setInput x *> p <* eof <* setInput "\n" <* newline
 
-l :: Parser a -> Parser a
-l p = p <* spaces
-
 spaces :: Parser ()
 spaces = " " *> spaces <|> pure ()
 
