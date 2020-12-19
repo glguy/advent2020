@@ -1,4 +1,5 @@
 {-# Language BlockArguments #-}
+{-# Options_GHC -Wno-orphans #-}
 {-|
 Module      : Advent.Bench
 Description : Helper for running benchmarks
