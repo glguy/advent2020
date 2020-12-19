@@ -1,26 +1,27 @@
-{-# Language OverloadedStrings #-}
+{-# Language ImportQualifiedPost, OverloadedStrings #-}
 module Advent
   ( module Advent
   , satisfy, anySingle, endBy, endBy1
   , sepBy, sepBy1, manyTill, decimal, letterChar, parseMaybe
   ) where
 
-import System.Environment
-import Text.Printf
+import Advent.Coord
+import Control.Applicative ((<|>))
+import Data.Array.Unboxed qualified as A
 import Data.Foldable (toList)
+import Data.List
+import Data.Map (Map)
+import Data.Map.Strict qualified as SMap
+import Data.Set qualified as Set
+import Data.Vector qualified as Vector
+import Data.Vector.Unboxed qualified as UVector
+import Data.Void
+import System.Environment
 import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, sepBy1, endBy1, manyTill)
 import Text.Megaparsec.Char (newline, letterChar)
 import Text.Megaparsec.Char.Lexer (decimal, signed)
 import Text.Megaparsec.Error (errorBundlePretty)
-import Data.Void
-import Data.List
-import Advent.Coord
-import qualified Data.Set as Set
-import           Data.Map (Map)
-import qualified Data.Map.Strict as SMap
-import qualified Data.Vector as Vector
-import qualified Data.Vector.Unboxed as UVector
-import qualified Data.Array.Unboxed as A
+import Text.Printf
 
 -- | Get the input for the given day.
 --
@@ -86,6 +87,12 @@ parseLines p input =
     Right a -> Right a
   where
     parse1 x = setInput x *> p <* eof <* setInput "\n" <* newline
+
+l :: Parser a -> Parser a
+l p = p <* spaces
+
+spaces :: Parser ()
+spaces = " " *> spaces <|> pure ()
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 count :: Foldable t => (a -> Bool) -> t a -> Int
