@@ -60,12 +60,6 @@ main =
   do inp <- parse <$> getInputLines 17
      print (run neighborCount3 (map toC3 inp))
      print (run neighborCount4 (map toC4 inp))
-     -- print (run neighborCount6 (map toC6 inp))
-     -- benchMain (parse <$> getInputLines 17)
-     --    [("1" , run neighborCount3     . map toC3               ),
-     --     ("2" , run neighborCount4     . map toC4               ),
-     --     ("1L", run (neighborCountN 3) . map (\(x,y)->[0,x,y])  ),
-     --     ("2L", run (neighborCountN 4) . map (\(x,y)->[0,0,x,y]))]
 
 run ::
   Ord a =>
@@ -94,12 +88,13 @@ step neighbor world
 
 -- List-based coordinates ----------------------------------------------
 
--- | Given a dimension and a coordinate this produces a map of all the
+-- Given a dimension and a coordinate this produces a map of all the
 -- neighboring cells with values of @1@.
-neighborCountN :: Int -> [Int] -> Map [Int] Int
-neighborCountN d =
-  let ns = Map.fromList [(c,1) | c <- tail (replicateM d [0,-1,1])]
-  in \c -> Map.mapKeysMonotonic (zipWith (+) c) ns
+--
+-- neighborCountN :: Int -> [Int] -> Map [Int] Int
+-- neighborCountN d =
+--   let ns = Map.fromList [(c,1) | c <- tail (replicateM d [0,-1,1])]
+--   in \c -> Map.mapKeysMonotonic (zipWith (+) c) ns
 
 -- Unpacked 3-tuples ---------------------------------------------------
 
@@ -125,15 +120,3 @@ neighborCount4 :: C4 -> Map C4 Int
 neighborCount4 =
   let ns = Map.fromList [(C4 x y z w,1) | [x,y,z,w] <- tail (replicateM 4 [0,-1,1])]
   in \(C4 a b c d) -> Map.mapKeysMonotonic (\(C4 x y z w) -> C4 (a+x) (b+y) (c+z) (d+w)) ns
-
-------------------------------------------------------------------------
-
-data C6 = C6 !Int !Int !Int !Int !Int !Int deriving (Eq, Ord)
-
-toC6 :: (Int,Int) -> C6
-toC6 (x,y) = C6 x y 0 0 0 0
-
-neighborCount6 :: C6 -> Map C6 Int
-neighborCount6 =
-  let ns = Map.fromList [(C6 x y z w u v,1) | [x,y,z,w,u,v] <- tail (replicateM 6 [0,-1,1])]
-  in \(C6 a b c d e f) -> Map.mapKeysMonotonic (\(C6 x y z w u v) -> C6 (a+x) (b+y) (c+z) (d+w) (e+u) (f+v)) ns

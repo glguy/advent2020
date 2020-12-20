@@ -31,4 +31,5 @@ main =
          part2 (2:ds) _ y z = part2 ds z 0 (z+y) -- unused in normal input
          part2 (3:ds) _ _ z = part2 ds 0 0 z
          part2 []     _ _ z = z
+         part2 _      _ _ _ = error "unexpected gap"
      print (part2 diffs 0 0 1 :: Integer)

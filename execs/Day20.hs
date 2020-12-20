@@ -53,6 +53,10 @@ reorient xs =
 toPicture :: [String] -> Picture
 toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
 
+-- |
+-- >>> :main
+-- 8581320593371
+-- 2031
 main :: IO ()
 main =
   do inp <- map (fmap toPicture) <$> [format|20 (Tile %u:%n(%s%n)*%n)*|]

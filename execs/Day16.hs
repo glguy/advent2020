@@ -28,6 +28,10 @@ match (_,range) x = any (match1 x) range
 
 ------------------------------------------------------------------------
 
+-- |
+-- >>> :main
+-- 25916
+-- 2564529489989
 main :: IO ()
 main =
   do (fields, yourTicket, nearbyTickets) <-

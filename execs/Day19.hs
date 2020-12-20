@@ -16,7 +16,6 @@ import Advent.InputParser (format)
 import Data.Foldable (asum, traverse_)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
-import Data.Maybe (fromMaybe)
 import Text.ParserCombinators.ReadP qualified as R
 
 -- | Rules either match a literal string, or match a sum

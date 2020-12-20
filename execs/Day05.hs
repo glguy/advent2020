@@ -25,8 +25,9 @@ main =
      print (gap (sort seatIds))
 
 gap :: [Int] -> Int
-gap (x:y:z) | x+2 == y = x+1
+gap (x:y:_) | x+2 == y = x+1
 gap (_:xs) = gap xs
+gap [] = error "couldn't find a gap"
 
 seatId :: String -> Int
 seatId xs = let (r,c) = seat xs in 8*r+c
@@ -38,3 +39,4 @@ seat = foldl f (0,0)
     f (r,c) 'R' = (r,2*c+1)
     f (r,c) 'F' = (2*r  ,c)
     f (r,c) 'B' = (2*r+1,c)
+    f _     _   = error "bad direction"

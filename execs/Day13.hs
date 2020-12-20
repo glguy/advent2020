@@ -15,10 +15,8 @@ much more straight-forward.
 -}
 module Main (main) where
 
-import Advent
 import Advent.InputParser  (format)
 import Data.List           (foldl1')
-import Control.Applicative ((<|>))
 
 -- |
 -- >>> :main

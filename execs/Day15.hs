@@ -11,7 +11,6 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent
 import Advent.InputParser (format)
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
