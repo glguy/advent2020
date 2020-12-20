@@ -16,6 +16,7 @@ import Advent.InputParser (format)
 import Data.Foldable (asum, traverse_)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
+import Data.Maybe (fromMaybe)
 import Text.ParserCombinators.ReadP qualified as R
 
 -- | Rules either match a literal string, or match a sum
@@ -37,7 +38,7 @@ main =
                         (%s%n)*|]
                   <$> getRawInput 19
 
-     let rules1 = IntMap.fromList [(fromIntegral k, fmap (map (map fromIntegral)) v) | (k,v) <- rs]
+     let rules1 = IntMap.fromList rs
          rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])
                 $ IntMap.insert 11 (Right [[42,31],[42,11,31]])
                 $ rules1

@@ -11,8 +11,10 @@ tokens :-
 ")"   { const TCloseGroup }
 "%c"  { const TAnyChar }
 "%s"  { const TAnyWord }
-"%u"  { const TUnsigned }
-"%d"  { const TSigned }
+"%u"  { const TUnsignedInt }
+"%d"  { const TSignedInt }
+"%lu"  { const TUnsignedInteger }
+"%ld"  { const TSignedInteger }
 "%n"  { const TNewline }
 "*"   { const TMany }
 "+"   { const TSome }

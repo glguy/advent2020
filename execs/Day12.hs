@@ -16,7 +16,7 @@ import Advent.InputParser (format)
 import Advent.Coord
 import Data.List (foldl')
 
-type Command = (Char, Integer)
+type Command = (Char, Int)
 
 -- | The simulation tracks the current location and the vector used
 -- when moving /forward/.
@@ -60,5 +60,5 @@ action mapCard st = \case
   ('R', 180) -> mapVect turnAround         st
   x          -> error ("Unknown command: " ++ show x)
 
-move :: Integer -> Coord -> Coord -> Coord
-move n v = addCoord (scaleCoord (fromInteger n) v)
+move :: Int -> Coord -> Coord -> Coord
+move n v = addCoord (scaleCoord n v)

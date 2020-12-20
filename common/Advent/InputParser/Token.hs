@@ -5,8 +5,10 @@ data Token
   | TCloseGroup
   | TAnyChar
   | TAnyWord
-  | TUnsigned
-  | TSigned
+  | TUnsignedInteger
+  | TSignedInteger
+  | TUnsignedInt
+  | TSignedInt
   | TNewline
   | TMany
   | TSome

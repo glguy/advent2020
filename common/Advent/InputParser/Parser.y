@@ -12,8 +12,10 @@ import Advent.InputParser.Syntax
 ')'   { TCloseGroup }
 '%c'  { TAnyChar }
 '%s'  { TAnyWord }
-'%u'  { TUnsigned }
-'%d'  { TSigned }
+'%u'  { TUnsignedInt }
+'%d'  { TSignedInt }
+'%lu' { TUnsignedInteger }
+'%ld' { TSignedInteger }
 '%n'  { TNewline }
 '*'   { TMany }
 '+'   { TSome }
@@ -40,8 +42,10 @@ aParsers
 
 aParser
   : '(' inputParser ')'         { $2 }
-  | '%u'       { Unsigned }
-  | '%d'       { Signed }
+  | '%u'       { UnsignedInt }
+  | '%d'       { SignedInt }
+  | '%lu'       { UnsignedInteger }
+  | '%ld'       { SignedInteger }
   | '%s'       { Word }
   | '%c'       { Char }
   | '%n'       { Literal '\n' }

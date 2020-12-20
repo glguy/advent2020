@@ -46,9 +46,12 @@ toReadP s =
   case s of
     Literal c -> [| () <$ char c |]
 
-    Unsigned  -> [| (read :: String -> Integer) <$> some (satisfy isDigit) |]
-    Signed    -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> some (satisfy isDigit)) |]
-    Char      -> [| get |]
+    UnsignedInteger -> [| (read :: String -> Integer) <$> some (satisfy isDigit) |]
+    SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> some (satisfy isDigit)) |]
+    UnsignedInt     -> [| (read :: String -> Int) <$> some (satisfy isDigit) |]
+    SignedInt       -> [| (read :: String -> Int) <$> ((++) <$> option "" (string "-") <*> some (satisfy isDigit)) |]
+
+    Char      -> [| satisfy ('\n' /=) |]
     Word      -> [| some (satisfy (not . isSpace)) |]
     Empty     -> [| pure () |]
 
