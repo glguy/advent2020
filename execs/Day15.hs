@@ -1,4 +1,4 @@
-{-# Language BlockArguments, NumericUnderscores, OverloadedStrings #-}
+{-# Language BlockArguments, NumericUnderscores, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 15 solution
@@ -12,6 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
+import Advent.InputParser (format)
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
 import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPinnedPrimArray, setPrimArray)
@@ -25,7 +26,7 @@ type T = Int32
 -- 412
 main :: IO ()
 main =
-  do inp <- getParsedInput 15 (decimal `sepBy` ",")
+  do inp <- map fromIntegral <$> [format|15 %u&,%n|]
      print (game inp      2_020)
      print (game inp 30_000_000)
 

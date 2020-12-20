@@ -53,8 +53,7 @@ toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
 main :: IO ()
 main =
   do inp <- map (fmap toPicture)
-        <$> [format|20
-              (Tile %u:%n(%s%n)*%n)*|]
+        <$> [format|20 (Tile %u:%n(%s%n)*%n)*|]
 
      -- arrange all the tiles
      let tileLocations = range (C 0 0, C (sz-1) (sz-1))
