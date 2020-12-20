@@ -21,6 +21,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Ix
 
 type Picture = [Coord]
 
@@ -51,11 +52,12 @@ toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
 
 main :: IO ()
 main =
-  do inp <- map (fmap toPicture) . [format|(Tile %u:%n(%s%n)*%n)*|]
-        <$> getRawInput 20
+  do inp <- map (fmap toPicture)
+        <$> [format|20
+              (Tile %u:%n(%s%n)*%n)*|]
 
      -- arrange all the tiles
-     let tileLocations = [C y x | y <- [0..sz-1], x <- [0..sz-1]]
+     let tileLocations = range (C 0 0, C (sz-1) (sz-1))
      let aligned = head (stitch Map.empty inp tileLocations)
      print (product [fst (aligned Map.! C y x) | y <- [0,sz-1], x <- [0,sz-1]])
 

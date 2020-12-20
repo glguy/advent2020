@@ -1,7 +1,9 @@
 {-# Language TemplateHaskell #-}
-module Advent.InputParser (format, makeParser) where
+module Advent.InputParser (format) where
 
-import Control.Applicative (some)
+import Advent (getRawInput)
+import Control.Applicative ((<|>), some)
+import Control.Monad
 import Advent.InputParser.Parser
 import Advent.InputParser.Lexer
 import Advent.InputParser.Syntax
@@ -10,84 +12,85 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 import Data.Char
 import Data.Maybe
+import Text.Read (readMaybe)
 
 parse :: String -> Syntax
 parse = inputParser . alexScanTokens
 
-days =
-  map parse
-  [ "(%u%n)*"
-  , "(%u-%u: %s%n)*"
-  , "(%s:%s( |%n))+&%n"
-  , "(%s %s bags contain (no other bags|((%u %s %s bag(|s))&(, ))).%n)*"
-  ]
-
 format :: QuasiQuoter
 format = QuasiQuoter
-  { quoteExp  = makeParser . cleanIndent
+  { quoteExp  = uncurry makeParser <=< prepare
   , quotePat  = \_ -> fail "format: patterns not supported"
   , quoteType = \_ -> fail "format: types not supported"
   , quoteDec  = \_ -> fail "format: declarations not supported"
   }
 
-cleanIndent :: String -> String
-cleanIndent str =
+prepare :: String -> Q (Int,String)
+prepare str =
   case lines str of
-    x:xs | all (' '==) x -> concatMap (drop n) xs
+    []   -> fail "Empty input format"
+    [x]  -> case reads x of
+              [(n,rest)] -> pure (n, dropWhile (' '==) rest)
+              _ -> fail "Failed to parse single-line input pattern"
+    x:xs ->
+      do n <- case readMaybe x of
+                Nothing -> fail "Failed to parse format day number"
+                Just n  -> pure n
+         pure (n, concatMap (drop indent) xs1)
       where
-        n = minimum (map (length . takeWhile (' '==)) xs)
-    _ -> str
+        xs1    = filter (any (' ' /=)) xs
+        indent = minimum (map (length . takeWhile (' '==)) xs1)
 
-makeParser :: String -> ExpQ
-makeParser str = [| \inp -> maybe (error "bad input parse") fst (listToMaybe (readP_to_S ($(toReadP (parse str)) <* eof) inp)) |]
+makeParser :: Int -> String -> ExpQ
+makeParser n str =
+  [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP (parse str)) <* eof)
+     <$> getRawInput n |]
 
 toReadP :: Syntax -> ExpQ
 toReadP s =
   case s of
-    Literal c -> [| () <$ char c |]
+    Literal xs_ -> [| () <$ string xs |]
+      where xs = reverse xs_
 
-    UnsignedInteger -> [| (read :: String -> Integer) <$> some (satisfy isDigit) |]
-    SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> some (satisfy isDigit)) |]
-    UnsignedInt     -> [| (read :: String -> Int) <$> some (satisfy isDigit) |]
-    SignedInt       -> [| (read :: String -> Int) <$> ((++) <$> option "" (string "-") <*> some (satisfy isDigit)) |]
+    UnsignedInteger -> [| (read :: String -> Integer) <$>                                      munch1 isDigit  |]
+    SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
+    UnsignedInt     -> [| (read :: String -> Int    ) <$>                                      munch1 isDigit  |]
+    SignedInt       -> [| (read :: String -> Int    ) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
 
     Char      -> [| satisfy ('\n' /=) |]
-    Word      -> [| some (satisfy (not . isSpace)) |]
-    Empty     -> [| pure () |]
+    Word      -> [| munch1 (not . isSpace) |]
 
     Many x
-      | interesting x -> [| many $(toReadP x) |]
+      | interesting x -> [|       many $(toReadP x) |]
       | otherwise     -> [| () <$ many $(toReadP x) |]
 
     Some x
-      | interesting x -> [| some $(toReadP x) |]
+      | interesting x -> [|       some $(toReadP x) |]
       | otherwise     -> [| () <$ some $(toReadP x) |]
 
     SepBy x y
-      | interesting x -> [| sepBy $(toReadP x) $(toReadP y) |]
+      | interesting x -> [|       sepBy $(toReadP x) $(toReadP y) |]
       | otherwise     -> [| () <$ sepBy $(toReadP x) $(toReadP y) |]
 
     Alt x y
-      | xn, yn -> [| (Left    <$> $(toReadP x)) +++ (Right   <$> $(toReadP y)) |]
-      | xn     -> [| (Just    <$> $(toReadP x)) +++ (Nothing <$  $(toReadP y)) |]
-      |     yn -> [| (Nothing <$  $(toReadP x)) +++ (Just    <$> $(toReadP y)) |]
-      | otherwise -> [|           $(toReadP x) +++               $(toReadP y) |]
+      | xi, yi    -> [| Left    <$> $(toReadP x) <|> Right   <$> $(toReadP y) |]
+      | xi        -> [| Just    <$> $(toReadP x) <|> Nothing <$  $(toReadP y) |]
+      |     yi    -> [| Nothing <$  $(toReadP x) <|> Just    <$> $(toReadP y) |]
+      | otherwise -> [|             $(toReadP x) <|>             $(toReadP y) |]
       where
-        xn = interesting x
-        yn = interesting y
+        xi = interesting x
+        yi = interesting y
 
-    Seq x y
-      | n > 1     -> foldl (\l r -> if interesting r then [| $l <*> $(toReadP r) |]
-                                                     else [| $l <*  $(toReadP r) |]
-                           ) [| pure $(conE (tupleDataName n)) |] xs
-      | n == 1    -> foldl (\l r -> if interesting r then [| $l  *> $(toReadP r) |]
-                                                     else [| $l <*  $(toReadP r) |]
-                           ) (toReadP (head xs)) (tail xs)
-      | otherwise -> foldl (\l r -> [| $l *> $r |]) (toReadP (head xs)) (map toReadP (tail xs))
+    Follow xs_
+      | null xs   -> [| pure () |]
+      | otherwise -> foldl (\l r ->
+                                let r' = toReadP r in
+                                if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
+                           ) fun xs
       where
-        xs = seqs (Seq x y)
+        xs = reverse xs_
         n  = length (filter interesting xs)
 
-seqs :: Syntax -> [Syntax]
-seqs (Seq x y) = seqs x ++ [y]
-seqs x         = [x]
+        fun
+          | n == 1    = [| pure id |]
+          | otherwise = [| pure $(conE (tupleDataName n)) |]

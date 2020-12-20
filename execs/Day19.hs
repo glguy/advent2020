@@ -32,11 +32,11 @@ type Rule = Either Char [[Int]]
 -- 323
 main :: IO ()
 main =
-  do (rs,ws) <- [format|
-                        (%u: ("%c"|%u& &( %| ))%n)*
-                        %n
-                        (%s%n)*|]
-                  <$> getRawInput 19
+  do (rs,ws) <- [format|19
+                   (%u: ("%c"|%u& &( %| ))%n)*
+                   %n
+                   (%s%n)*
+                |]
 
      let rules1 = IntMap.fromList rs
          rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])

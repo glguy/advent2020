@@ -16,7 +16,7 @@ gold bag.
 -}
 module Main (main) where
 
-import Advent (getRawInput, count, löb)
+import Advent (count, löb)
 import Advent.InputParser (format)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
@@ -33,7 +33,7 @@ type Rule = (String, String, Maybe [(Integer, String, String)])
 -- 7867
 main :: IO ()
 main =
-  do rules <- [format|(%s %s bags contain (no other bags|(%lu %s %s bag(|s))&(, )).%n)*|] <$> getRawInput 7
+  do rules <- [format|7 (%s %s bags contain (no other bags|(%lu %s %s bag(|s))&(, )).%n)*|]
      let tc = transClosBags rules
          k = ("shiny","gold")
      print (count (Map.member k) tc)

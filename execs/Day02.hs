@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 2 solution
@@ -14,16 +14,10 @@ Password validation rules.
 module Main (main) where
 
 import Advent (Parser, anySingle, count, decimal, getParsedLines)
+import Advent.InputParser (format)
 import Control.Applicative (many)
 
 type Input = (Int, Int, Char, String)
-
--- | Input line parser.
---
--- >>> Advent.parseLines format "1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc\n"
--- Right [(1,3,'a',"abcde"),(1,3,'b',"cdefg"),(2,9,'c',"ccccccccc")]
-format :: Parser Input
-format = (,,,) <$> decimal <* "-" <*> decimal <* " " <*> anySingle <* ": " <*> many anySingle
 
 -- | Check both password validation rules against the list of passwords.
 --
@@ -32,7 +26,7 @@ format = (,,,) <$> decimal <* "-" <*> decimal <* " " <*> anySingle <* ": " <*> m
 -- 245
 main :: IO ()
 main =
-  do inp <- getParsedLines 2 format
+  do inp <- [format|2 (%u-%u %c: %s%n)*|]
      print (count p1 inp)
      print (count p2 inp)
 

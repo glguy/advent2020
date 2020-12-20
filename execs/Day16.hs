@@ -30,13 +30,15 @@ match (_,range) x = any (match1 x) range
 
 main :: IO ()
 main =
-  do (fields, yourTicket, nearbyTickets) <- [format|
+  do (fields, yourTicket, nearbyTickets) <-
+       [format|16
          (%s& : (%lu-%lu)&( or )%n)*%n
          your ticket:%n
          (%lu&,)%n
          %n
          nearby tickets:%n
-         (%lu&,%n)*|] <$> getRawInput 16
+         (%lu&,%n)*
+       |]
 
      -- print sum of invalid fields
      print $ sum [x | xs <- nearbyTickets, x <- xs, not (any (`match` x) fields)]

@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 6 solution
@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (Parser, endBy, getParsedInput, letterChar, sepBy)
+import Advent.InputParser (format)
 import Control.Applicative (some)
 import Data.List (intersect, union)
 
@@ -21,12 +21,6 @@ import Data.List (intersect, union)
 -- 3254
 main :: IO ()
 main =
-  do inp <- getParsedInput 6 parser
+  do inp <- [format|6 (%s%n)*&%n|]
      print (length (foldr union []   =<< inp))
      print (length (foldr1 intersect =<< inp))
-
--- |
--- >>> Advent.parseMaybe parser "abc\nd\n\ne\n"
--- Just [["abc","d"],["e"]]
-parser :: Parser [[String]]
-parser = (some letterChar `endBy` "\n") `sepBy` "\n"
