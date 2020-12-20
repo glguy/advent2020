@@ -34,11 +34,13 @@ instance Ix Coord where
   range (C lorow locol, C hirow hicol) =
     [ C row col | row <- [lorow..hirow], col <- [locol..hicol]]
 
-above, below, left, right :: Coord -> Coord
+above, below, left, right, invert :: Coord -> Coord
 above (C y x) = C (y-1)  x
 below (C y x) = C (y+1)  x
 left  (C y x) = C  y    (x-1)
 right (C y x) = C  y    (x+1)
+
+invert (C y x) = C x y
 
 turnLeft, turnRight, turnAround :: Coord -> Coord
 turnLeft  (C y x) = C (-x) y
