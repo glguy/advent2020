@@ -10,6 +10,7 @@ tokens :-
 "("     { const TOpenGroup              }
 ")"     { const TCloseGroup             }
 "%c"    { const TAnyChar                }
+"%a"    { const TAnyLetter              }
 "%s"    { const TAnyWord                }
 "%u"    { const TUnsignedInt            }
 "%d"    { const TSignedInt              }

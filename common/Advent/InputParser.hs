@@ -64,6 +64,7 @@ toReadP s =
     SignedInt       -> [| (read :: String -> Int    ) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
 
     Char      -> [| satisfy ('\n' /=) |]
+    Letter    -> [| satisfy (\x -> 'a' <= x && x <= 'z' || 'A' <= x && x <= 'Z') |]
     Word      -> [| many (satisfy (not . isSpace)) |]
 
     Many x

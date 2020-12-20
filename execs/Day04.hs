@@ -30,7 +30,7 @@ type Passport = [Field]
 -- 133
 main :: IO ()
 main =
-  do inp <- [format|4 (%s:%s( |%n))*&%n|]
+  do inp <- [format|4 (%a+:%s( |%n))*&%n|]
      print (count complete inp)
      print (count valid inp)
 

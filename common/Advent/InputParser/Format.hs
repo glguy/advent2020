@@ -19,6 +19,7 @@ data Format
   | SignedInt
   | Word
   | Char
+  | Letter
   deriving Show
 
 interesting :: Format -> Bool
@@ -35,6 +36,7 @@ interesting s =
     SignedInt           -> True
     Word                -> True
     Char                -> True
+    Letter              -> True
     Gather{}            -> True
     Literal{}           -> False
 

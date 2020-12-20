@@ -4,6 +4,7 @@ data Token
   = TOpenGroup
   | TCloseGroup
   | TAnyChar
+  | TAnyLetter
   | TAnyWord
   | TUnsignedInteger
   | TSignedInteger

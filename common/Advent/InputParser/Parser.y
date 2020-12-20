@@ -15,6 +15,7 @@ import Advent.InputParser.Format
 '&'                             { TSepBy                }
 '|'                             { TAlt                  }
 '!'                             { TBang                 }
+'%a'                            { TAnyLetter            }
 '%c'                            { TAnyChar              }
 '%s'                            { TAnyWord              }
 '%u'                            { TUnsignedInt          }
@@ -51,6 +52,7 @@ atom
   | '%ld'                       { SignedInteger         }
   | '%s'                        { Word                  }
   | '%c'                        { Char                  }
+  | '%a'                        { Letter                }
   | '%n'                        { Literal "\n"          }
   | LIT                         { Literal [$1]          }
   | atom '*'                    { Many $1               }
