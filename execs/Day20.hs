@@ -1,4 +1,5 @@
 {-# Language BlockArguments, ImportQualifiedPost, QuasiQuotes #-}
+{-# Options_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -11,7 +12,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (getRawInput, pickOne)
+import Advent
 import Advent.Coord (Coord(C), turnRight, invert, addCoord, coordRow, above, left)
 import Advent.InputParser (format)
 import Control.Monad (guard)
@@ -54,9 +55,17 @@ main :: IO ()
 main =
   do inp <- map (fmap toPicture) <$> [format|20 (Tile %u:%n(%s%n)*%n)*|]
 
+     -- "Tiles at the edge of the image also have this border,
+     -- but the outermost edges won't line up with any other tiles."
+     let edges = Map.keysSet
+               $ Map.filter (1==)
+               $ cardinality [code | (_,pic) <- inp, code <- edgeCodes pic]
+
      -- arrange all the tiles
      let tileLocations = range (C 0 0, C (sz-1) (sz-1))
-     let aligned = head (stitch Map.empty inp tileLocations)
+     let aligned = head (stitch edges Map.empty inp tileLocations)
+
+     -- print the product of the corner tile IDs
      print (product [fst (aligned Map.! C y x) | y <- [0,sz-1], x <- [0,sz-1]])
 
      -- assemble the complete image while removing borders
@@ -67,14 +76,13 @@ main =
                 , y /= 9, x /= 9, y /= 0, x /= 0]
 
      -- cut all the snakes out of the picture
-     let p2 = foldl' cut pic
+     print $ Set.size
+           $ foldl' cut pic
               [map (addCoord (C dy dx)) s -- translate the tile
               | dx <- [0..8*sz]
               , dy <- [0..8*sz]
               , s  <- reorient snek
               ]
-
-     print (Set.size p2)
 
 -- | If a picture is contained in the coordinate set, delete it
 cut :: Set Coord -> Picture -> Set Coord
@@ -84,19 +92,40 @@ cut m s
   where
     s' = Set.fromList s
 
-stitch :: Map Coord (Int,[Coord]) -> [(Int,[Coord])] -> [Coord] -> [Map Coord (Int, [Coord])]
-stitch m _ [] = [m]
-stitch m avail (c:cs) =
+stitch ::
+  Set [Int]                  {- ^ valid edge codes             -} ->
+  Map Coord (Int,[Coord])    {- ^ current placement            -} ->
+  [(Int,[Coord])]            {- ^ tiles remaining to be placed -} ->
+  [Coord]                    {- ^ unplaced coordinates         -} ->
+  [Map Coord (Int, [Coord])] {- ^ list of successful layouts   -}
+stitch _ m _ [] = [m]
+stitch edges m avail (c:cs) =
   do -- pick one of the remaining tiles and orient it
-     ((i,cell_), avail') <- pickOne avail
-     cell <- reorient cell_
+     ((tileID,cell_), avail') <- pickOne avail
+     cell                <- reorient cell_
 
-     -- match the tile above if there is one
-     for_ (Map.lookup (above c) m) \(_,l) ->
-       guard (sort [x | C 0 x <- cell] == sort [x | C 9 x <- l])
+     -- match the tile above or if it's a valid edge
+     guard case Map.lookup (above c) m of
+       Just (_,l) -> topEdge cell == bottomEdge l
+       Nothing    -> normalize (topEdge cell) `Set.member` edges
 
-     -- match the tile to the left if there is one
-     for_ (Map.lookup (left c) m) \(_,l) ->
-       guard (sort [y | C y 0 <- cell] == sort [y | C y 9 <- l])
+     -- match the tile to the left or that it's a valid edge
+     guard case Map.lookup (left c) m of
+       Just (_,l) -> leftEdge cell == rightEdge l
+       Nothing    -> normalize (leftEdge cell) `Set.member` edges
 
-     stitch (Map.insert c (i,cell) m) avail' cs
+     stitch edges (Map.insert c (tileID,cell) m) avail' cs
+
+-- | Extract all the normalized edge codes for a tile
+edgeCodes :: Picture -> [[Int]]
+edgeCodes xs = [ normalize (f xs) | f <- [topEdge, leftEdge, bottomEdge, rightEdge]]
+
+topEdge, leftEdge, bottomEdge, rightEdge :: [Coord] -> [Int]
+topEdge    xs = sort [x | C 0 x <- xs]
+leftEdge   xs = sort [y | C y 0 <- xs]
+bottomEdge xs = sort [x | C 9 x <- xs]
+rightEdge  xs = sort [y | C y 9 <- xs]
+
+-- | Normalize a code so that it can be identified even when flipped over
+normalize :: [Int] -> [Int]
+normalize x = min x (reverse (map (9-) x))
