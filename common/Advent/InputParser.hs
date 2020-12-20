@@ -4,9 +4,9 @@ module Advent.InputParser (format) where
 import Advent (getRawInput)
 import Control.Applicative ((<|>), some)
 import Control.Monad
-import Advent.InputParser.Parser
+import Advent.InputParser.Parser (parseFormat)
 import Advent.InputParser.Lexer
-import Advent.InputParser.Syntax
+import Advent.InputParser.Format
 import Text.ParserCombinators.ReadP
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote
@@ -14,8 +14,11 @@ import Data.Char
 import Data.Maybe
 import Text.Read (readMaybe)
 
-parse :: String -> Syntax
-parse = inputParser . alexScanTokens
+parse :: String -> Q Format
+parse txt =
+  case parseFormat (alexScanTokens txt) of
+    Left e -> fail ("Format string parse failure: " ++ show e)
+    Right fmt -> pure fmt
 
 format :: QuasiQuoter
 format = QuasiQuoter
@@ -43,10 +46,11 @@ prepare str =
 
 makeParser :: Int -> String -> ExpQ
 makeParser n str =
-  [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP (parse str)) <* eof)
-     <$> getRawInput n |]
+  do fmt <- parse str
+     [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP fmt) <* eof)
+       <$> getRawInput n |]
 
-toReadP :: Syntax -> ExpQ
+toReadP :: Format -> ExpQ
 toReadP s =
   case s of
     Literal xs_ -> [| () <$ string xs |]
@@ -73,20 +77,20 @@ toReadP s =
       | otherwise     -> [| () <$ sepBy $(toReadP x) $(toReadP y) |]
 
     Alt x y
-      | xi, yi    -> [| Left    <$> $(toReadP x) <|> Right   <$> $(toReadP y) |]
-      | xi        -> [| Just    <$> $(toReadP x) <|> Nothing <$  $(toReadP y) |]
-      |     yi    -> [| Nothing <$  $(toReadP x) <|> Just    <$> $(toReadP y) |]
-      | otherwise -> [|             $(toReadP x) <|>             $(toReadP y) |]
+      | xi, yi    -> [| Left    <$> $xp <|> Right   <$> $yp |]
+      | xi        -> [| Just    <$> $xp <|> Nothing <$  $yp |]
+      |     yi    -> [| Nothing <$  $xp <|> Just    <$> $yp |]
+      | otherwise -> [|             $xp <|>             $yp |]
       where
         xi = interesting x
         yi = interesting y
+        xp = toReadP x
+        yp = toReadP y
 
-    Follow xs_
-      | null xs   -> [| pure () |]
-      | otherwise -> foldl (\l r ->
-                                let r' = toReadP r in
-                                if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
-                           ) fun xs
+    Follow xs_ -> foldl (\l r ->
+                            let r' = toReadP r in
+                            if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
+                        ) fun xs
       where
         xs = reverse xs_
         n  = length (filter interesting xs)

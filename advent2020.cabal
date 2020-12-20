@@ -36,7 +36,7 @@ library
   other-modules:
     Advent.InputParser.Lexer
     Advent.InputParser.Token
-    Advent.InputParser.Syntax
+    Advent.InputParser.Format
     Advent.InputParser.Parser
 
   build-tool-depends: alex:alex, happy:happy

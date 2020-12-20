@@ -1,14 +1,14 @@
 {-# Language GADTs, KindSignatures #-}
-module Advent.InputParser.Syntax where
+module Advent.InputParser.Format where
 
-data Syntax
+data Format
   -- repetitions
-  = Many  Syntax
-  | Some  Syntax
-  | SepBy Syntax Syntax
+  = Many  Format
+  | Some  Format
+  | SepBy Format Format
   -- combinations
-  | Alt Syntax Syntax
-  | Follow [Syntax] -- REVERSE ORDER!
+  | Alt Format Format
+  | Follow [Format] -- REVERSE ORDER!
   -- primitives
   | Literal String -- REVERSE ORDER!
   | UnsignedInteger
@@ -19,7 +19,7 @@ data Syntax
   | Char
   deriving Show
 
-interesting :: Syntax -> Bool
+interesting :: Format -> Bool
 interesting s =
   case s of
     Many x              -> interesting x
@@ -35,7 +35,7 @@ interesting s =
     Char                -> True
     Literal{}           -> False
 
-follow :: Syntax -> Syntax -> Syntax
+follow :: Format -> Format -> Format
 follow (Literal x) (Literal y) = Literal (y++x)
 follow (Follow (Literal x:xs)) (Literal y) = Follow (Literal (y++x):xs)
 follow (Follow x) (Follow y) = Follow (y++x)
