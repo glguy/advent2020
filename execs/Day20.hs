@@ -47,8 +47,8 @@ rotate xs = map (addCoord (C 0 n) . turnRight) xs
 -- | Generate all 8 rotations and flips of a picture
 reorient :: Picture -> [Picture]
 reorient xs =
-  take 4 (iterate rotate xs) ++
-  take 4 (iterate rotate (map invert xs))
+  do xs' <- take 4 (iterate rotate xs)
+     [xs', map invert xs']
 
 toPicture :: [String] -> Picture
 toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
@@ -90,8 +90,13 @@ main =
                , s <- reorient snek
                ]
 
--- | If a picture is contained in the coordinate set, delete it
-cut :: Set Coord -> Set Coord -> Set Coord
+-- | Remove the needle from the haystack if the whole needle is found
+-- in the haystack.
+cut ::
+  Ord a =>
+  Set a {- ^ haystack -} ->
+  Set a {- ^ needle   -} ->
+  Set a
 cut m s
   | s `Set.isSubsetOf` m = m Set.\\ s
   | otherwise            = m

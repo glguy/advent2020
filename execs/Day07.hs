@@ -22,8 +22,8 @@ import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Map qualified as Map
 
-type Bag = (String,String)
-type Rule = (String, String, Maybe [(Integer, String, String)])
+type Bag = String
+type Rule = (String, Maybe [(Integer, String)])
 
 ------------------------------------------------------------------------
 
@@ -33,14 +33,14 @@ type Rule = (String, String, Maybe [(Integer, String, String)])
 -- 7867
 main :: IO ()
 main =
-  do rules <- [format|7 (%s %s bags contain (no other bags|(%lu %s %s bag(|s))&(, )).%n)*|]
+  do rules <- [format|7 ((%s %s)! bags contain (no other bags|(%lu (%s %s)! bag(|s))&(, )).%n)*|]
      let tc = transClosBags rules
-         k = ("shiny","gold")
+         k = "shiny gold"
      print (count (Map.member k) tc)
      print (sum (tc Map.! k))
 
 transClosBags :: [Rule] -> Map Bag (Map Bag Integer)
-transClosBags rules = löb (expand <$> Map.fromList [((b1,b2), [((c1,c2),n) | (n,c1,c2) <- fromMaybe [] xs]) | (b1,b2,xs) <- rules])
+transClosBags rules = löb (expand <$> Map.fromList [(b, [(c,n) | (n,c) <- fromMaybe [] xs]) | (b,xs) <- rules])
 
 expand :: [(Bag,Integer)] -> Map Bag (Map Bag Integer) -> Map Bag Integer
 expand inside tc =

@@ -56,6 +56,8 @@ toReadP s =
     Literal xs_ -> [| () <$ string xs |]
       where xs = reverse xs_
 
+    Gather p -> [| fst <$> gather $(toReadP p) |]
+
     UnsignedInteger -> [| (read :: String -> Integer) <$>                                      munch1 isDigit  |]
     SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
     UnsignedInt     -> [| (read :: String -> Int    ) <$>                                      munch1 isDigit  |]

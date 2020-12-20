@@ -14,5 +14,6 @@ data Token
   | TSome
   | TSepBy
   | TAlt
+  | TBang
   | TLiteral Char
   deriving (Eq, Ord, Show, Read)

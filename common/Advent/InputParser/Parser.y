@@ -14,6 +14,7 @@ import Advent.InputParser.Format
 '+'                             { TSome                 }
 '&'                             { TSepBy                }
 '|'                             { TAlt                  }
+'!'                             { TBang                 }
 '%c'                            { TAnyChar              }
 '%s'                            { TAnyWord              }
 '%u'                            { TUnsignedInt          }
@@ -29,7 +30,7 @@ LIT                             { TLiteral $$           }
 %error                          { Left                  }
 
 %left '|'
-%left '&' '*' '+'
+%left '&' '*' '+' '!'
 
 %%
 
@@ -54,6 +55,7 @@ atom
   | LIT                         { Literal [$1]          }
   | atom '*'                    { Many $1               }
   | atom '+'                    { Some $1               }
+  | atom '!'                    { Gather $1             }
   | atom '&' atom               { SepBy $1 $3           }
 
 {

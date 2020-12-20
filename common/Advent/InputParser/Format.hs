@@ -9,6 +9,8 @@ data Format
   -- combinations
   | Alt Format Format
   | Follow [Format] -- REVERSE ORDER!
+  -- return matched string
+  | Gather Format
   -- primitives
   | Literal String -- REVERSE ORDER!
   | UnsignedInteger
@@ -33,6 +35,7 @@ interesting s =
     SignedInt           -> True
     Word                -> True
     Char                -> True
+    Gather{}            -> True
     Literal{}           -> False
 
 follow :: Format -> Format -> Format
