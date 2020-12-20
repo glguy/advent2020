@@ -1,4 +1,4 @@
-{-# Language LambdaCase #-}
+{-# Language QuasiQuotes, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -12,13 +12,11 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
+import Advent.InputParser (format)
 import Advent.Coord
 import Data.List (foldl')
 
-type Command = (Char, Int)
-
-command :: Parser Command
-command = (,) <$> anySingle <*> number
+type Command = (Char, Integer)
 
 -- | The simulation tracks the current location and the vector used
 -- when moving /forward/.
@@ -38,7 +36,7 @@ mapVect f s = s { vect = f (vect s) }
 -- 41212
 main :: IO ()
 main =
-  do inp <- getParsedLines 12 command
+  do inp <- [format|(%c%u%n)*|] <$> getRawInput 12
      print (walk mapHere (Sim origin east                ) inp)
      print (walk mapVect (Sim origin (move 10 east north)) inp)
 
@@ -62,5 +60,5 @@ action mapCard st = \case
   ('R', 180) -> mapVect turnAround         st
   x          -> error ("Unknown command: " ++ show x)
 
-move :: Int -> Coord -> Coord -> Coord
-move n v = addCoord (scaleCoord n v)
+move :: Integer -> Coord -> Coord -> Coord
+move n v = addCoord (scaleCoord (fromInteger n) v)

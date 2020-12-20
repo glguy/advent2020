@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, OverloadedStrings #-}
+{-# Language ImportQualifiedPost, OverloadedStrings, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 7 solution
@@ -16,25 +16,14 @@ gold bag.
 -}
 module Main (main) where
 
-import Advent (Parser, count, decimal, letterChar, sepBy1, getParsedInput, löb)
-import Control.Applicative (many, some, optional, (<|>))
+import Advent (getRawInput, count, löb)
+import Advent.InputParser (format)
 import Data.Map (Map)
+import Data.Maybe (fromMaybe)
 import Data.Map qualified as Map
 
-type Bag = String
-type Rule = (Bag, [(Int, Bag)])
-
-bag :: Parser Bag
-bag = some letterChar <> " " <> some letterChar <* " bag" <* optional "s"
-
-bags :: Parser (Int, Bag)
-bags = (,) <$> decimal <* " " <*> bag
-
-bagss :: Parser [(Int, Bag)]
-bagss = [] <$ "no other bags" <|> bags `sepBy1` ", "
-
-rule :: Parser Rule
-rule = (,) <$> bag <* " contain " <*> bagss <* ".\n"
+type Bag = (String,String)
+type Rule = (String, String, Maybe [(Integer, String, String)])
 
 ------------------------------------------------------------------------
 
@@ -44,15 +33,16 @@ rule = (,) <$> bag <* " contain " <*> bagss <* ".\n"
 -- 7867
 main :: IO ()
 main =
-  do rules <- getParsedInput 7 (many rule)
+  do rules <- [format|(%s %s bags contain (no other bags|(%u %s %s bag(|s))&(, )).%n)*|] <$> getRawInput 7
      let tc = transClosBags rules
-     print (count (Map.member "shiny gold") tc)
-     print (sum (tc Map.! "shiny gold"))
+         k = ("shiny","gold")
+     print (count (Map.member k) tc)
+     print (sum (tc Map.! k))
 
-transClosBags :: [Rule] -> Map Bag (Map Bag Int)
-transClosBags rules = löb (expand <$> Map.fromList rules)
+transClosBags :: [Rule] -> Map Bag (Map Bag Integer)
+transClosBags rules = löb (expand <$> Map.fromList [((b1,b2), [((c1,c2),n) | (n,c1,c2) <- fromMaybe [] xs]) | (b1,b2,xs) <- rules])
 
-expand :: [(Int,Bag)] -> Map Bag (Map Bag Int) -> Map Bag Int
+expand :: [(Bag,Integer)] -> Map Bag (Map Bag Integer) -> Map Bag Integer
 expand inside tc =
   Map.unionsWith (+)
-    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (n,b) <- inside]
+    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (b,n) <- inside]

@@ -31,7 +31,15 @@ library
     Advent.PQueue
     Advent.Queue
     Advent.Search
+    Advent.InputParser
     --Advent.Visualize
+  other-modules:
+    Advent.InputParser.Lexer
+    Advent.InputParser.Token
+    Advent.InputParser.Syntax
+    Advent.InputParser.Parser
+
+  build-tool-depends: alex:alex, happy:happy
 
   build-depends:
     base         ^>= 4.14,
@@ -42,6 +50,7 @@ library
     megaparsec   ^>= 9.0,
     vector       ^>= 0.12,
     integer-gmp  ^>= 1.0,
+    template-haskell,
     --JuicyPixels  ^>= 3.3.2,
 
 

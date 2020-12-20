@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, OverloadedStrings #-}
+{-# Language ImportQualifiedPost, OverloadedStrings, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 14 solution
@@ -36,6 +36,7 @@ in run2 [] IntMap.empty cmds
 module Main where
 
 import Advent
+import Advent.InputParser (format)
 import Control.Applicative
 import Control.Monad (replicateM)
 import Data.List (foldl')
@@ -62,6 +63,7 @@ pMask = X <$ "X" <|> I <$ "1" <|> O <$ "0"
 main :: IO ()
 main =
   do inp <- getParsedLines 14 pCmd
+     _ <- [format|(mask = %s%n|mem[%u] = %u%n)*|] <$> getRawInput 14
      print (run1 [] IntMap.empty inp)
      print (run2 [] IntMap.empty inp)
 

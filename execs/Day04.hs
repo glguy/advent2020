@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, BlockArguments, ScopedTypeVariables #-}
+{-# Language BlockArguments, ScopedTypeVariables, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 4 solution
@@ -14,9 +14,9 @@ Passport validation
 module Main (main) where
 
 import Advent
-import Control.Applicative
+import Advent.InputParser (format)
 import Control.Monad
-import Data.Char (isSpace, isAlpha, isDigit)
+import Data.Char (isDigit)
 import Data.List (delete, sort)
 import Data.Maybe (isJust)
 import Text.Read (readMaybe)
@@ -24,16 +24,13 @@ import Text.Read (readMaybe)
 type Field = (String, String)
 type Passport = [Field]
 
-entry :: Parser Field
-entry = (,) <$> some letterChar <* ":" <*> manyTill anySingle (satisfy isSpace)
-
 -- |
 -- >>> :main
 -- 245
 -- 133
 main :: IO ()
 main =
-  do inp <- getParsedInput 4 (many entry `sepBy` "\n")
+  do inp <- [format|(%s:%s( |%n))*&%n|] <$> getRawInput 4
      print (count complete inp)
      print (count valid inp)
 
