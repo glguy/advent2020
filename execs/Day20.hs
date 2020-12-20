@@ -78,19 +78,17 @@ main =
      -- cut all the snakes out of the picture
      print $ Set.size
            $ foldl' cut pic
-              [map (addCoord (C dy dx)) s -- translate the tile
+              [Set.fromList (addCoord (C dy dx) <$> s) -- translate the tile
               | dx <- [0..8*sz]
               , dy <- [0..8*sz]
               , s  <- reorient snek
               ]
 
 -- | If a picture is contained in the coordinate set, delete it
-cut :: Set Coord -> Picture -> Set Coord
+cut :: Set Coord -> Set Coord -> Set Coord
 cut m s
-  | s' `Set.isSubsetOf` m = m Set.\\ s'
-  | otherwise             = m
-  where
-    s' = Set.fromList s
+  | s `Set.isSubsetOf` m = m Set.\\ s
+  | otherwise            = m
 
 stitch ::
   Set [Int]                  {- ^ valid edge codes             -} ->
