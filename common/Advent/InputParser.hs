@@ -47,8 +47,8 @@ prepare str =
 makeParser :: Int -> String -> ExpQ
 makeParser n str =
   do fmt <- parse str
-     [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP fmt) <* eof)
-       <$> getRawInput n |]
+     let qf = [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP fmt) <* eof) |]
+     if n == 0 then qf else [| $qf <$> getRawInput n |]
 
 toReadP :: Format -> ExpQ
 toReadP s =
