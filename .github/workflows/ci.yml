@@ -1,0 +1,18 @@
+on: [push]
+name: CI
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: haskell/actions/setup@v1
+        with:
+          ghc-version: '8.10.2'
+          cabal-version: '3.2.0.0'
+      - name: Configure
+        run: cabal configure --write-ghc-environment-files=always
+      - name: Build
+        run: cabal build
+      - name: Test
+        run: cabal test --test-show-details=direct
