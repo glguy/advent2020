@@ -65,7 +65,7 @@ toReadP s =
 
     Char      -> [| satisfy ('\n' /=) |]
     Letter    -> [| satisfy (\x -> 'a' <= x && x <= 'z' || 'A' <= x && x <= 'Z') |]
-    Word      -> [| many (satisfy (not . isSpace)) |]
+    Word      -> [| some (satisfy (not . isSpace)) |]
 
     Many x
       | interesting x -> [|       many $(toReadP x) |]
