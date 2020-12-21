@@ -65,8 +65,8 @@ expr2 = chainl1 (chainl1 (aexpr expr2) add) mul
 
 -- | Parser mode.
 data Mode
-  = N -- | Expecting a number or @(@
-  | O -- | Expecting an operator
+  = N -- ^ Expecting a number or @(@
+  | O -- ^ Expecting an operator
   deriving Show
 
 shuntParser :: (Char -> Int) -> String -> Expr

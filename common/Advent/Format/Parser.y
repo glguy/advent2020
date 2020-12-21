@@ -23,7 +23,7 @@ import Advent.Format.Types
 '%ld'                           { TSignedInteger        }
 LIT                             { TLiteral $$           }
 
-%name parseFormat
+%name parseFormat format
 
 %monad                          { Either [Token]        }
 %error                          { Left                  }

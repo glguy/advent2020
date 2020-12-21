@@ -11,7 +11,7 @@ main =
   do files <- processFiles <$> listDirectory "execs"
      for_ files \file ->
        do hPutStrLn stderr ("Testing " ++ file)
-          doctest ["-icommon", file]
+          doctest [file]
 
 processFiles :: [FilePath] -> [FilePath]
 processFiles
