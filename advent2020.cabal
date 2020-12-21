@@ -20,13 +20,17 @@ source-repository head
   type: git
   location: https://github.com/glguy/advent2020
 
+flag bench
+  description: Enable building benchmark harness
+  default: False
+  manual: True
+
 library
   hs-source-dirs:      common
   default-language:    Haskell2010
 
   exposed-modules:
     Advent
-    Advent.Bench
     Advent.Chinese
     Advent.Coord
     Advent.PQueue
@@ -34,6 +38,7 @@ library
     Advent.Search
     Advent.Format
     --Advent.Visualize
+
   other-modules:
     Advent.Format.Lexer
     Advent.Format.Parser
@@ -45,13 +50,17 @@ library
     base         ^>= 4.14,
     array        ^>= 0.5.4,
     containers   ^>= 0.6,
-    criterion    ^>= 1.5.9,
-    deepseq      ^>= 1.4,
     megaparsec   ^>= 9.0,
     vector       ^>= 0.12,
     integer-gmp  ^>= 1.0,
     template-haskell,
     --JuicyPixels  ^>= 3.3.2,
+
+  if flag(bench)
+    exposed-modules: Advent.Bench
+    build-depends:
+      criterion    ^>= 1.5.9,
+      deepseq      ^>= 1.4,
 
 test-suite doctests
   type:          exitcode-stdio-1.0
