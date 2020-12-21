@@ -29,18 +29,16 @@ LIT                             { TLiteral $$           }
 %monad                          { Either [Token]        }
 %error                          { Left                  }
 
-%left '|'
 %left '&' '*' '+' '!'
 
 %%
 
 format
-  :                             { Follow []             }
-  | atoms                       { $1                    }
-  | format '|' format           { Alt $1 $3             }
+  : atoms                       { $1                    }
+  | format '|' atoms            { Alt $1 $3             }
 
 atoms
-  :       atom                  { $1                    }
+  :                             { Follow []             }
   | atoms atom                  { follow $1 $2          }
 
 atom
