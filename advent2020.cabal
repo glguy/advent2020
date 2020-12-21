@@ -158,7 +158,7 @@ executable Day15
 
 executable Day16
   main-is:             Day16.hs
-  build-depends:       advent2020, base
+  build-depends:       advent2020, base, containers
   hs-source-dirs:      execs
   default-language:    Haskell2010
 
@@ -199,3 +199,9 @@ executable Day21
   build-depends:       advent2020, base, containers
   hs-source-dirs:      execs
   default-language:    Haskell2010
+
+--executable Day21
+--  main-is:             Day21.hs
+--  build-depends:       advent2020, base, containers, vector, array, megaparsec, split, fgl, ersatz, 5puzzle
+--  hs-source-dirs:      execs
+--  default-language:    Haskell2010
