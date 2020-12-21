@@ -10,7 +10,6 @@ data Token
   | TSignedInteger
   | TUnsignedInt
   | TSignedInt
-  | TNewline
   | TMany
   | TSome
   | TSepBy

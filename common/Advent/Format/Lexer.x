@@ -16,12 +16,12 @@ tokens :-
 "%d"    { const TSignedInt              }
 "%lu"   { const TUnsignedInteger        }
 "%ld"   { const TSignedInteger          }
-"%n"    { const TNewline                }
 "*"     { const TMany                   }
 "+"     { const TSome                   }
 "&"     { const TSepBy                  }
 "|"     { const TAlt                    }
 "!"     { const TBang                   }
+"%n"    { const (TLiteral '\n')         }
 "%" .   { TLiteral . head . tail        }
 .       { TLiteral . head               }
 

@@ -21,7 +21,6 @@ import Advent.Format.Types
 '%d'                            { TSignedInt            }
 '%lu'                           { TUnsignedInteger      }
 '%ld'                           { TSignedInteger        }
-'%n'                            { TNewline              }
 LIT                             { TLiteral $$           }
 
 %name parseFormat
@@ -50,7 +49,6 @@ atom
   | '%s'                        { Word                  }
   | '%c'                        { Char                  }
   | '%a'                        { Letter                }
-  | '%n'                        { Literal "\n"          }
   | LIT                         { Literal [$1]          }
   | atom '*'                    { Many $1               }
   | atom '+'                    { Some $1               }
