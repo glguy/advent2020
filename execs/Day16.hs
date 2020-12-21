@@ -16,6 +16,7 @@ import Advent
 import Advent.Format (format)
 import Control.Applicative (some)
 import Data.List ((\\), isPrefixOf, sortOn, transpose)
+import Data.Set qualified as Set
 
 type Range = (Integer, Integer)
 type Field = ([String], [Range])
@@ -49,18 +50,12 @@ main =
 
      let goodTickets = [xs | xs <- nearbyTickets, all (\x -> any (`match` x) fields) xs]
 
-         possibleFields col = [fst field | field <- fields, all (match field) col]
+         possibleFields col = Set.fromList [fst field | field <- fields, all (match field) col]
 
          allCandidates = [possibleFields col | col <- transpose goodTickets]
 
          -- pair up my ticket's field values with the candidate field names
-         constraints = sortOn (length . snd) (zip yourTicket allCandidates)
+         constraints = zip yourTicket allCandidates
 
-     print $ product [i | (i, name) <- head (search [] constraints)
+     print $ product [i | (i, name) <- head (uniqueAssignment constraints)
                         , ["departure"] `isPrefixOf` name]
-
--- | Find an way to choose a single @b@ from each list such that
--- all the chosen elements are unique.
-search :: Eq b => [b] -> [(a, [b])] -> [[(a,b)]]
-search _    []          = [[]]
-search seen ((a,bs):xs) = [(a,b):rest | b <- bs\\seen, rest <- search (b:seen) xs]

@@ -10,8 +10,10 @@ import Control.Applicative ((<|>))
 import Data.Array.Unboxed qualified as A
 import Data.Foldable (toList)
 import Data.List
+import Data.Ord (comparing)
 import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
+import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Vector qualified as Vector
 import Data.Vector.Unboxed qualified as UVector
@@ -188,3 +190,15 @@ times :: Int -> (a -> a) -> a -> a
 times n f x
   | n <= 0    = x
   | otherwise = times (n-1) f $! f x
+
+uniqueAssignment ::
+  (Ord a, Ord b) =>
+  [(a, Set b)] {- ^ each @a@ must map to one of the corresponding @b@ -} ->
+  [[(a, b)]]    {- ^ assignments of @a@ and @b@ pairs                  -}
+uniqueAssignment m =
+  case sortBy (comparing (Set.size . snd)) m of
+    [] -> [[]]
+    (k,vs):rest ->
+      [ (k,v) : soln
+      | v <- Set.toList vs
+      , soln <- uniqueAssignment (fmap (Set.delete v) <$> rest)]
