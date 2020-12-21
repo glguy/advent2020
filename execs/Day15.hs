@@ -14,8 +14,8 @@ module Main (main) where
 import Advent.Format (format)
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
-import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPinnedPrimArray, setPrimArray)
 import Data.Int (Int32)
+import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPinnedPrimArray, setPrimArray)
 
 -- | Type of elements in our sequence -- big enough to hold 30 million
 type T = Int32
