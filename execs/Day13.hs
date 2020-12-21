@@ -15,8 +15,8 @@ much more straight-forward.
 -}
 module Main (main) where
 
-import Advent.InputParser  (format)
-import Data.List           (foldl1')
+import Advent.Format (format)
+import Data.List (foldl1')
 
 -- |
 -- >>> :main

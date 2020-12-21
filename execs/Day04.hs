@@ -14,7 +14,7 @@ Passport validation
 module Main (main) where
 
 import Advent
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Control.Monad
 import Data.Char (isDigit)
 import Data.List (delete, sort)

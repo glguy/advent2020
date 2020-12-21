@@ -14,7 +14,7 @@ module Main (main) where
 
 import Advent             (cardinality, pickOne)
 import Advent.Coord       (Coord(C), turnRight, invert, addCoord, coordRow, above, left)
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Control.Monad      (guard)
 import Data.Foldable      (foldl', for_)
 import Data.Ix            (range)

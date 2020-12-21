@@ -13,9 +13,9 @@ module Main (main) where
 
 import Advent
 import Advent.Coord
-import Data.Maybe (mapMaybe)
-import Data.Array.Unboxed qualified as A
 import Data.Array.Base qualified as AB
+import Data.Array.Unboxed qualified as A
+import Data.Maybe (mapMaybe)
 
 type Seating   = A.UArray Coord Char
 

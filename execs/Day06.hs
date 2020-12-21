@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Data.List (intersect, union)
 
 -- |

@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST, runST)
 import Data.Primitive.PrimArray (MutablePrimArray, readPrimArray, writePrimArray, newPinnedPrimArray, setPrimArray)

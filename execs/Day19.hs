@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Data.Foldable (asum, traverse_)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap

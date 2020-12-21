@@ -13,7 +13,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Control.Applicative (some)
 import Data.List ((\\), isPrefixOf, sortOn, transpose)
 

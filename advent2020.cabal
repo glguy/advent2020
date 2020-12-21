@@ -31,13 +31,12 @@ library
     Advent.PQueue
     Advent.Queue
     Advent.Search
-    Advent.InputParser
+    Advent.Format
     --Advent.Visualize
   other-modules:
-    Advent.InputParser.Lexer
-    Advent.InputParser.Token
-    Advent.InputParser.Format
-    Advent.InputParser.Parser
+    Advent.Format.Lexer
+    Advent.Format.Parser
+    Advent.Format.Types
 
   build-tool-depends: alex:alex, happy:happy
 

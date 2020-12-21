@@ -13,8 +13,8 @@ Password validation rules.
 -}
 module Main (main) where
 
-import Advent              (count)
-import Advent.InputParser  (format)
+import Advent (count)
+import Advent.Format (format)
 
 type Input = (Int, Int, Char, String)
 

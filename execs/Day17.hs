@@ -37,12 +37,11 @@ On my MacBook Pro, part 2 of this problem runs in 50ms.
 module Main (main) where
 
 import Advent
---import Advent.Bench
 import Control.Monad (replicateM)
-import Data.Set (Set)
-import Data.Set qualified as Set
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
+import Data.Set (Set)
+import Data.Set qualified as Set
 
 -- | Find the coordinates of live cells.
 --

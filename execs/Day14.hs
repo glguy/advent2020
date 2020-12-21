@@ -38,10 +38,10 @@ module Main where
 import Advent
 import Control.Applicative
 import Control.Monad (replicateM)
-import Data.List (foldl')
+import Data.Bits (setBit, clearBit)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
-import Data.Bits (setBit, clearBit)
+import Data.List (foldl')
 
 data Cmd = Mask [Mask] | Mem Int Int deriving (Show)
 

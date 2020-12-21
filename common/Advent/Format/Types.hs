@@ -1,5 +1,23 @@
-{-# Language GADTs, KindSignatures #-}
-module Advent.InputParser.Format where
+module Advent.Format.Types where
+
+data Token
+  = TOpenGroup
+  | TCloseGroup
+  | TAnyChar
+  | TAnyLetter
+  | TAnyWord
+  | TUnsignedInteger
+  | TSignedInteger
+  | TUnsignedInt
+  | TSignedInt
+  | TNewline
+  | TMany
+  | TSome
+  | TSepBy
+  | TAlt
+  | TBang
+  | TLiteral Char
+  deriving (Eq, Ord, Show, Read)
 
 data Format
   -- repetitions

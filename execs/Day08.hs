@@ -13,8 +13,8 @@ module Main (main) where
 
 import Advent
 import Control.Applicative
-import Data.Maybe (fromJust, mapMaybe)
 import Data.Graph.Inductive qualified as G
+import Data.Maybe (fromJust, mapMaybe)
 
 -- | Programs are expressed as control-flow graphs.
 --

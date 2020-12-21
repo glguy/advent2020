@@ -17,10 +17,10 @@ gold bag.
 module Main (main) where
 
 import Advent (count, löb)
-import Advent.InputParser (format)
+import Advent.Format (format)
 import Data.Map (Map)
-import Data.Maybe (fromMaybe)
 import Data.Map qualified as Map
+import Data.Maybe (fromMaybe)
 
 type Bag = String
 type Rule = (String, Maybe [(Integer, String)])

@@ -11,8 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.InputParser (format)
 import Advent.Coord
+import Advent.Format (format)
 import Data.List (foldl')
 
 type Command = (Char, Int)

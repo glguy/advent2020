@@ -1,17 +1,17 @@
 {-# Language TemplateHaskell #-}
-module Advent.InputParser (format) where
+module Advent.Format (format) where
 
 import Advent (getRawInput)
+import Advent.Format.Lexer
+import Advent.Format.Parser (parseFormat)
+import Advent.Format.Types
 import Control.Applicative ((<|>), some)
 import Control.Monad
-import Advent.InputParser.Parser (parseFormat)
-import Advent.InputParser.Lexer
-import Advent.InputParser.Format
-import Text.ParserCombinators.ReadP
-import Language.Haskell.TH
-import Language.Haskell.TH.Quote
 import Data.Char
 import Data.Maybe
+import Language.Haskell.TH
+import Language.Haskell.TH.Quote
+import Text.ParserCombinators.ReadP
 import Text.Read (readMaybe)
 
 parse :: String -> Q Format

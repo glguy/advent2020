@@ -1,8 +1,7 @@
 {
-module Advent.InputParser.Parser where
+module Advent.Format.Parser where
 
-import Advent.InputParser.Token
-import Advent.InputParser.Format
+import Advent.Format.Types
 }
 
 %tokentype                      { Token                 }

@@ -1,7 +1,7 @@
 {
-module Advent.InputParser.Lexer where
+module Advent.Format.Lexer where
 
-import Advent.InputParser.Token
+import Advent.Format.Types
 }
 %wrapper "basic"
 
