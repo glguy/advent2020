@@ -214,7 +214,7 @@ struct forall_st {
 
 static void forall_try(void *dat, int col, int s, int row) {
   struct forall_st *st = dat;
-  st->soln[st->used++] = col;
+  st->soln[st->used++] = row;
 }
 
 static void forall_undo(void *dat) {

@@ -22,19 +22,10 @@ foreign import ccall unsafe dlx_set :: Dlx -> CInt -> CInt -> IO ()
 foreign import ccall unsafe dlx_mark_optional :: Dlx -> CInt -> IO ()
 foreign import ccall unsafe dlx_remove_row :: Dlx -> CInt -> IO ()
 foreign import ccall unsafe dlx_pick_row :: Dlx -> CInt -> IO CInt
-foreign import ccall dlx_forall :: Dlx -> FunPtr (Ptr CInt -> CInt -> IO ()) -> IO ()
-
-foreign import ccall dlx_solve ::
-  Dlx ->
-  Ptr () ->
-  FunPtr (Ptr () -> CInt -> CInt -> CInt -> IO ()) ->
-  FunPtr (Ptr () -> IO ()) ->
-  FunPtr (Ptr () -> IO ()) ->
-  FunPtr (Ptr () -> CInt -> IO ()) ->
-  IO ()
 
 type Wrapper a = a -> IO (FunPtr a)
 foreign import ccall "wrapper" mkCB :: Wrapper (Ptr CInt -> CInt -> IO ())
+foreign import ccall dlx_forall :: Dlx -> FunPtr (Ptr CInt -> CInt -> IO ()) -> IO ()
 
 report :: IORef [[Int]] -> Ptr CInt -> CInt -> IO ()
 report solnsRef ptr n =
