@@ -57,7 +57,7 @@ play2 seen xxs@(x Seq.:<| xs) yys@(y Seq.:<| ys)
   , let x' = Seq.take x xs
   , let y' = Seq.take y ys
   , let x1 = maximum x' -- best p1 card
-  , let y1 = maximum x' -- best p2 card
+  , let y1 = maximum y' -- best p2 card
 
     -- if P1 has the high card that can't be lost to a
     -- recursive game then he will always eventually win:
