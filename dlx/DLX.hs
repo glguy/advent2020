@@ -3,6 +3,7 @@ module DLX (dlx, dlxOpt) where
 
 import Foreign.C
 import Foreign.Ptr
+import Foreign.Marshal.Array
 import Control.Exception
 import Data.Foldable
 import Data.IORef
@@ -21,44 +22,32 @@ foreign import ccall unsafe dlx_set :: Dlx -> CInt -> CInt -> IO ()
 foreign import ccall unsafe dlx_mark_optional :: Dlx -> CInt -> IO ()
 foreign import ccall unsafe dlx_remove_row :: Dlx -> CInt -> IO ()
 foreign import ccall unsafe dlx_pick_row :: Dlx -> CInt -> IO CInt
+foreign import ccall dlx_forall :: Dlx -> FunPtr (Ptr CInt -> CInt -> IO ()) -> IO ()
 
 foreign import ccall dlx_solve ::
   Dlx ->
-  FunPtr (CInt -> CInt -> CInt -> IO ()) ->
-  FunPtr (IO ()) ->
-  FunPtr (IO ()) ->
-  FunPtr (CInt -> IO ()) ->
+  Ptr () ->
+  FunPtr (Ptr () -> CInt -> CInt -> CInt -> IO ()) ->
+  FunPtr (Ptr () -> IO ()) ->
+  FunPtr (Ptr () -> IO ()) ->
+  FunPtr (Ptr () -> CInt -> IO ()) ->
   IO ()
 
 type Wrapper a = a -> IO (FunPtr a)
+foreign import ccall "wrapper" mkCB :: Wrapper (Ptr CInt -> CInt -> IO ())
 
-foreign import ccall "wrapper" mkCover   :: Wrapper (CInt -> CInt -> CInt -> IO ())
-foreign import ccall "wrapper" mkUncover :: Wrapper (IO ())
-foreign import ccall "wrapper" mkFound   :: Wrapper (IO ())
-foreign import ccall "wrapper" mkStuck   :: Wrapper (CInt -> IO ())
-
-push :: IORef [Int] -> CInt -> CInt -> CInt -> IO ()
-push ref _ _ r = modifyIORef ref (fromIntegral r:)
-
-pop :: IORef [Int] -> IO ()
-pop ref = modifyIORef ref tail
-
-report :: IORef [[Int]] -> IORef [Int] -> IO ()
-report solnsRef solnRef =
-  do xs <- readIORef solnRef
-     modifyIORef solnsRef (xs:)
+report :: IORef [[Int]] -> Ptr CInt -> CInt -> IO ()
+report solnsRef ptr n =
+  do xs <- peekArray (fromIntegral n) ptr
+     modifyIORef solnsRef (map fromIntegral xs:)
 
 dlxRaw :: [(Int,Int)] -> [Int] -> IO [[Int]]
 dlxRaw ones opts =
-  newIORef [] >>= \solnRef ->
   newIORef [] >>= \solnsRef ->
   bracket dlx_new dlx_clear \p ->
-  bracket (mkCover   (push solnRef)) freeHaskellFunPtr \cover ->
-  bracket (mkUncover (pop  solnRef)) freeHaskellFunPtr \uncover ->
-  bracket (mkFound   (report solnsRef solnRef)) freeHaskellFunPtr \found ->
   do for_ ones \(r,c) -> dlx_set p (fromIntegral r) (fromIntegral c)
      for_ opts \r     -> dlx_mark_optional p (fromIntegral r)
-     dlx_solve p cover uncover found nullFunPtr
+     bracket (mkCB (report solnsRef)) freeHaskellFunPtr (dlx_forall p)
      readIORef solnsRef
 
 dlx :: (Ord a, Ord b) => [(a,b)] -> IO [[a]]

@@ -47,8 +47,9 @@ static cell_ptr UD_insert (cell_ptr j, cell_ptr k) {
   return j->U = k->U, j->D = k, k->U = k->U->D = j;
 }
 
-cell_ptr col_new(void) {
-  cell_ptr c = malloc(sizeof(*c));
+static cell_ptr col_new(void) {
+  cell_ptr c = malloc(sizeof *c);
+  if (!c) abort();
   UD_self(c)->s = 0;
   return c;
 }
@@ -60,11 +61,12 @@ struct dlx_s {
 };
 
 dlx_t dlx_new(void) {
-  dlx_t p = malloc(sizeof(*p));
+  dlx_t p = malloc(sizeof *p);
+  if (!p) abort();
   p->ctabn = p->rtabn = 0;
   p->ctab_alloc = p->rtab_alloc = 8;
-  p->ctab = malloc(sizeof(cell_ptr) * p->ctab_alloc);
-  p->rtab = malloc(sizeof(cell_ptr) * p->rtab_alloc);
+  p->ctab = calloc(p->ctab_alloc, sizeof(cell_ptr));
+  p->rtab = calloc(p->rtab_alloc, sizeof(cell_ptr));
   p->root = LR_self(col_new());
   return p;
 }
@@ -94,19 +96,21 @@ void dlx_clear(dlx_t p) {
 int dlx_rows(dlx_t dlx) { return dlx->rtabn; }
 int dlx_cols(dlx_t dlx) { return dlx->ctabn; }
 
-void dlx_add_col(dlx_t p) {
+static void dlx_add_col(dlx_t p) {
   cell_ptr c = col_new();
   LR_insert(c, p->root);
   c->n = p->ctabn++;
   if (p->ctabn == p->ctab_alloc) {
     p->ctab = realloc(p->ctab, sizeof(cell_ptr) * (p->ctab_alloc *= 2));
+    if (!p->ctab) abort();
   }
   p->ctab[c->n] = c;
 }
 
-void dlx_add_row(dlx_t p) {
+static void dlx_add_row(dlx_t p) {
   if (p->rtabn == p->rtab_alloc) {
     p->rtab = realloc(p->rtab, sizeof(cell_ptr) * (p->rtab_alloc *= 2));
+    if (!p->rtab) abort();
   }
   p->rtab[p->rtabn++] = 0;
 }
@@ -122,7 +126,8 @@ void dlx_mark_optional(dlx_t p, int col) {
 }
 
 static cell_ptr new1(cell_ptr c, int row) {
-  cell_ptr n = malloc(sizeof(*n));
+  cell_ptr n = malloc(sizeof *n);
+  if (!n) abort();
   n->n = row;
   n->c = c;
   c->s++;
@@ -171,52 +176,64 @@ int dlx_pick_row(dlx_t p, int i) {
   return 0;
 }
 
-int dlx_remove_row(dlx_t p, int i) {
-  if (i < 0 || i >= p->rtabn) return -1;
-  cell_ptr r = p->rtab[i];
-  if (!r) return 0;  // Empty row.
-  UD_delete(r)->c->s--;
-  C(j, r, R){
-    UD_delete(j)->c->s--;
-  }
-  p->rtab[i] = 0;
-  return 0;
-}
-
-void dlx_solve(dlx_t p,
-               void (*try_cb)(int, int, int),
-               void (*undo_cb)(void),
-               void (*found_cb)(),
-               void (*stuck_cb)())
+void dlx_solve(
+  dlx_t p,
+  void *dat,
+  void (*try_cb)(void*, int, int, int),
+  void (*undo_cb)(void*),
+  void (*found_cb)(void*),
+  void (*stuck_cb)(void*, int))
 {
   cell_ptr c = p->root->R;
   if (c == p->root) {
-    if (found_cb) found_cb();
+    if (found_cb) found_cb(dat);
     return;
   }
   int s = INT_MAX;  // S-heuristic: choose first most-constrained column.
   C(i, p->root, R) if (i->s < s) s = (c = i)->s;
   if (!s) {
-    if (stuck_cb) stuck_cb(c->n);
+    if (stuck_cb) stuck_cb(dat, c->n);
     return;
   }
   cover_col(c);
   C(r, c, D) {
-    if (try_cb) try_cb(c->n, s, r->n);
+    if (try_cb) try_cb(dat, c->n, s, r->n);
     C(j, r, R) cover_col(j->c);
-    dlx_solve(p, try_cb, undo_cb, found_cb, stuck_cb);
-    if (undo_cb) undo_cb();
+    dlx_solve(p, dat, try_cb, undo_cb, found_cb, stuck_cb);
+    if (undo_cb) undo_cb(dat);
     C(j, r, L) uncover_col(j->c);
   }
   uncover_col(c);
 }
 
-/*
-static void cover(int c, int s, int r) { sol[soln++] = r; }
-static void uncover() { soln--; }
-static void found() { cb(sol, soln); }
-void dlx_forall_cover(dlx_t p, void (*cb)(int[], int)) {
-  int sol[p->rtabn], soln = 0;
-  dlx_solve(p, cover, uncover, found, NULL);
+struct forall_st {
+  void (*cb)(int *, int);
+  int *soln;
+  int used;
+};
+
+static void forall_try(void *dat, int col, int s, int row) {
+  struct forall_st *st = dat;
+  st->soln[st->used++] = col;
 }
-*/
+
+static void forall_undo(void *dat) {
+  struct forall_st *st = dat;
+  st->used--;
+}
+
+static void forall_found(void *dat) {
+  struct forall_st *st = dat;
+  st->cb(st->soln, st->used);
+}
+
+void dlx_forall(dlx_t p, void (*cb)(int *, int)) {
+  struct forall_st st =
+    { .soln = calloc(dlx_rows(p), sizeof(int))
+    , .cb = cb
+    , .used = 0
+    };
+  if (!st.soln) abort();
+  dlx_solve(p, &st, forall_try, forall_undo, forall_found, NULL);
+  free(st.soln);
+}

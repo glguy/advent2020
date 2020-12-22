@@ -9,7 +9,7 @@ struct dlx_s;
 typedef struct dlx_s *dlx_t;
 
 // Returns new empty exact cover problem. No rows. No columns.
-dlx_t dlx_new();
+dlx_t dlx_new(void);
 
 // Frees exact cover problem.
 void dlx_clear(dlx_t dlx);
@@ -49,7 +49,12 @@ int dlx_pick_row(dlx_t dlx, int row);
 //
 // The callback stuck_cb is given the first uncoverable column.
 void dlx_solve(dlx_t dlx,
-               void (*cover_cb)(int col, int s, int row),
-               void (*uncover_cb)(),
-               void (*found_cb)(),
-               void (*stuck_cb)(int col));
+               void*,
+               void (*cover_cb)(void*, int col, int s, int row),
+               void (*uncover_cb)(void*),
+               void (*found_cb)(void*),
+               void (*stuck_cb)(void*, int col));
+
+void dlx_forall(
+  dlx_t p,
+  void (*cb)(int *, int));
