@@ -40,10 +40,9 @@ main =
      print (sum (tc Map.! k))
 
 transClosBags :: [Rule] -> Map Bag (Map Bag Integer)
-transClosBags rules =
-  löb (Map.fromList [(b, expand [(c,n) | (n,c) <- fromMaybe [] xs]) | (b,xs) <- rules])
+transClosBags rules = löb (expand <$> Map.fromList rules)
 
-expand :: [(Bag,Integer)] -> Map Bag (Map Bag Integer) -> Map Bag Integer
+expand :: Maybe [(Integer,Bag)] -> Map Bag (Map Bag Integer) -> Map Bag Integer
 expand inside tc =
   Map.unionsWith (+)
-    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (b,n) <- inside]
+    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (n,b) <- fromMaybe [] inside]
