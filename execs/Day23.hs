@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Format (format)
-import Control.Monad (unless)
+import Control.Monad (unless, zipWithM_)
 import Data.Array.IO (IOUArray, getBounds, newArray_, readArray, writeArray)
 import Data.Char (digitToInt)
 import Data.Foldable (for_)
@@ -26,8 +26,7 @@ newRing :: Int -> [Int] -> IO Ring
 newRing n order =
   do a <- newArray_ (1,n)
      for_ [1..n-1] \i -> writeArray a i (i+1)
-     for_ (zip order (tail order)) \(x,y) ->
-        writeArray a x y
+     zipWithM_ (writeArray a) order (tail order)
      if n == length order
         then writeArray a (last order) (head order)
         else writeArray a n (head order) >> writeArray a (last order) (1+maximum order)
@@ -72,7 +71,7 @@ play i a cur =
      (_,hi) <- getBounds a
      let dec 1 = hi
          dec i = i-1
-         dest = until (\i -> i/=g1 && i/=g2 && i/=g3) dec (dec cur)
+         dest = until (\i -> i /= g1 && i /= g2 && i /= g3) dec (dec cur)
 
      -- splice the group back in at dest
      writeArray a g3 =<< readArray a dest
