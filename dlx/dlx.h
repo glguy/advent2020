@@ -57,4 +57,5 @@ void dlx_solve(dlx_t dlx,
 
 void dlx_forall(
   dlx_t p,
+  int single,
   void (*cb)(int *, int));

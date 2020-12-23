@@ -1,5 +1,5 @@
 {-# Language BlockArguments, ImportQualifiedPost #-}
-module DLX (dlx, dlxOpt) where
+module DLX (DlxLimit(..), dlx, dlxOpt) where
 
 import Foreign.C
 import Foreign.Ptr
@@ -14,6 +14,9 @@ import Data.IntMap qualified as IntMap
 data Dlx_
 type Dlx = Ptr Dlx_
 
+data DlxLimit = SingleResult | AllResults
+  deriving (Eq, Ord, Read, Show)
+
 foreign import ccall unsafe dlx_new :: IO Dlx
 foreign import ccall unsafe dlx_clear :: Dlx -> IO ()
 foreign import ccall unsafe dlx_rows :: Dlx -> IO CInt
@@ -25,33 +28,35 @@ foreign import ccall unsafe dlx_pick_row :: Dlx -> CInt -> IO CInt
 
 type Wrapper a = a -> IO (FunPtr a)
 foreign import ccall "wrapper" mkCB :: Wrapper (Ptr CInt -> CInt -> IO ())
-foreign import ccall dlx_forall :: Dlx -> FunPtr (Ptr CInt -> CInt -> IO ()) -> IO ()
+foreign import ccall dlx_forall :: Dlx -> CInt -> FunPtr (Ptr CInt -> CInt -> IO ()) -> IO ()
 
 report :: IORef [[Int]] -> Ptr CInt -> CInt -> IO ()
 report solnsRef ptr n =
   do xs <- peekArray (fromIntegral n) ptr
      modifyIORef solnsRef (map fromIntegral xs:)
 
-dlxRaw :: [(Int,Int)] -> [Int] -> IO [[Int]]
-dlxRaw ones opts =
+dlxRaw :: DlxLimit -> [(Int,Int)] -> [Int] -> IO [[Int]]
+dlxRaw limit ones opts =
   newIORef [] >>= \solnsRef ->
   bracket dlx_new dlx_clear \p ->
   do for_ ones \(r,c) -> dlx_set p (fromIntegral r) (fromIntegral c)
      for_ opts \r     -> dlx_mark_optional p (fromIntegral r)
-     bracket (mkCB (report solnsRef)) freeHaskellFunPtr (dlx_forall p)
+     let single_ = case limit of SingleResult -> 1; AllResults -> 0
+     bracket (mkCB (report solnsRef)) freeHaskellFunPtr (dlx_forall p single_)
      readIORef solnsRef
 
 dlx :: (Ord a, Ord b) => [(a,b)] -> IO [[a]]
-dlx input = dlxOpt input (const False)
+dlx input = dlxOpt SingleResult input (const False)
 
-dlxOpt :: (Ord a, Ord b) => [(a,b)] -> (b -> Bool) -> IO [[a]]
-dlxOpt input opt =
+dlxOpt :: (Ord a, Ord b) => DlxLimit -> [(a,b)] -> (b -> Bool) -> IO [[a]]
+dlxOpt limit input opt =
   do let as = nub (sort (map fst input))
          bs = nub (sort (map snd input))
          a2i = Map.fromList (zip as [0..])
          b2i = Map.fromList (zip bs [0..])
          i2a = IntMap.fromList (zip [0..] as)
 
-     answers <- dlxRaw [(a2i Map.! a, b2i Map.! b) | (a,b) <- input]
+     answers <- dlxRaw limit
+                       [(a2i Map.! a, b2i Map.! b) | (a,b) <- input]
                        [i | (b,i) <- zip bs [0..], opt b]
      pure [[i2a IntMap.! a | a <- answer] | answer <- answers]

@@ -4,6 +4,7 @@
 // See http://en.wikipedia.org/wiki/Dancing_Links.
 #include <limits.h>
 #include <stdlib.h>
+#include <setjmp.h>
 #include "dlx.h"
 
 #define F(i,n) for(int i = 0; i < n; i++)
@@ -210,6 +211,8 @@ struct forall_st {
   void (*cb)(int *, int);
   int *soln;
   int used;
+  int single;
+  jmp_buf env;
 };
 
 static void forall_try(void *dat, int col, int s, int row) {
@@ -225,15 +228,21 @@ static void forall_undo(void *dat) {
 static void forall_found(void *dat) {
   struct forall_st *st = dat;
   st->cb(st->soln, st->used);
+  if (st->single) {
+    longjmp(st->env, 1);
+  }
 }
 
-void dlx_forall(dlx_t p, void (*cb)(int *, int)) {
+void dlx_forall(dlx_t p, int single, void (*cb)(int *, int)) {
   struct forall_st st =
     { .soln = calloc(dlx_rows(p), sizeof(int))
     , .cb = cb
     , .used = 0
+    , .single = single
     };
   if (!st.soln) abort();
-  dlx_solve(p, &st, forall_try, forall_undo, forall_found, NULL);
+  if (!single || !setjmp(st.env)) {
+    dlx_solve(p, &st, forall_try, forall_undo, forall_found, NULL);
+  }
   free(st.soln);
 }
