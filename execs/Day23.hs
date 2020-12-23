@@ -12,10 +12,11 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Format (format)
+import Control.Monad (unless)
+import Data.Array.IO (IOUArray, getBounds, newArray_, readArray, writeArray)
 import Data.Char (digitToInt)
 import Data.Foldable (for_)
 import Data.List ((\\))
-import Data.Array.IO (IOUArray, getBounds, newArray_, readArray, writeArray)
 
 -- | The array maps cup numbers (indexes) to the next cup
 -- in the sequence (elements).
@@ -24,9 +25,12 @@ type Ring = IOUArray Int Int
 newRing :: Int -> [Int] -> IO Ring
 newRing n order =
   do a <- newArray_ (1,n)
+     for_ [1..n-1] \i -> writeArray a i (i+1)
      for_ (zip order (tail order)) \(x,y) ->
         writeArray a x y
-     writeArray a (last order) (head order)
+     if n == length order
+        then writeArray a (last order) (head order)
+        else writeArray a n (head order) >> writeArray a (last order) (1+maximum order)
      pure a
 
 readRing :: Ring -> Int -> Int -> IO [Int]
@@ -52,8 +56,9 @@ main =
      p1 inp
      p2 inp
 
-step :: Ring -> Int -> IO Int
-step a cur =
+play :: Int -> Ring -> Int -> IO ()
+play i a cur =
+  unless (i==0)
   do -- extract a group of three cups
      g1 <- readArray a cur
      g2 <- readArray a g1
@@ -64,33 +69,33 @@ step a cur =
      writeArray a cur nx
 
      -- find the new destination label
-     (lo,hi) <- getBounds a
-     let gs = [g1,g2,g3]
-         searchOrder = [cur-1, cur-2 .. lo] ++ [hi, hi-1 .. ]
-         dest:_ = searchOrder \\ gs
+     (_,hi) <- getBounds a
+     let dec 1 = hi
+         dec i = i-1
+         dest = until (\i -> i/=g1 && i/=g2 && i/=g3) dec (dec cur)
 
      -- splice the group back in at dest
      writeArray a g3 =<< readArray a dest
      writeArray a dest g1
 
-     pure nx
+     play (i-1) a nx
 
 p1 :: [Int] -> IO ()
 p1 inp =
   do ring <- newRing (length inp) inp
-     chain 100 (step ring) (head inp)
+     let sz = length inp
+     play 100 ring (head inp)
 
-     xs <- readRing ring (length inp) 1
+     xs <- readRing ring sz 1
      putStrLn (concatMap show (tail xs))
 
 p2 :: [Int] -> IO ()
 p2 inp =
   do let sz   =  1_000_000
          iter = 10_000_000
-         inp' = take sz (inp ++ [maximum inp+1 ..])
 
-     ring <- newRing sz inp'
-     chain iter (step ring) (head inp')
+     ring <- newRing sz inp
+     play iter ring (head inp)
 
      x <- readArray ring 1
      y <- readArray ring x
