@@ -23,10 +23,11 @@ import Text.ParserCombinators.ReadP
 main :: IO ()
 main =
   do inp <- getInputLines 18
-
-     let run p = fst . head . readP_to_S (skipSpaces *> p <* eof)
      print (sum (map (run expr1) inp))
      print (sum (map (run expr2) inp))
+
+run :: ReadP a -> String -> a
+run p = fst . head . readP_to_S (skipSpaces *> p <* eof)
 
 l :: Char -> ReadP ()
 l c = char c *> skipSpaces
