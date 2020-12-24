@@ -49,7 +49,7 @@ readRing a n i
        pure (j : rest)
 
 -- |
--- :main
+-- >>> :main
 -- 47382659
 -- 42271866720
 main :: IO ()

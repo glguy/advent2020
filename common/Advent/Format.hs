@@ -65,7 +65,9 @@ toReadP s =
 
     Gather p -> [| fst <$> gather $(toReadP p) |]
 
-    Named n -> enumParser n
+    Named n
+      | isUpper (head n) -> enumParser n
+      | otherwise -> varE (mkName n)
 
     UnsignedInteger -> [| (read :: String -> Integer) <$>                                      munch1 isDigit  |]
     SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
