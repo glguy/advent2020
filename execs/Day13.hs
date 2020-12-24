@@ -24,10 +24,7 @@ import Data.List (foldl1')
 -- 1001569619313439
 main :: IO ()
 main =
-  do (t,rawBusses) <- [format|13
-                          %lu%n
-                          (x|%lu)&,%n
-                      |]
+  do (t,rawBusses) <- [format|13 %lu%n(x|%lu)&,%n|]
      let busses = [(i,b) | (i, Just b) <- zip [0..] rawBusses]
      print (part1 t (map snd busses))
      print (part2 busses)

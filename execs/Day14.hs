@@ -36,10 +36,7 @@ in run2 [] IntMap.empty cmds
 
 module Main where
 
-import Advent
 import Advent.Format(format)
-import Control.Applicative
-import Control.Monad (replicateM)
 import Data.Bits (setBit, clearBit)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
