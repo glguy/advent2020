@@ -41,7 +41,7 @@ step board
     rule k v = v == 2 || v == 1 && Set.member k board
 
 neighborhood :: Map Coord Int
-neighborhood = Map.fromList [(move d origin,1) | d <- ["w","e","ne","se","nw","sw"]]
+neighborhood = cardinality [move d origin | d <- ["w","e","ne","se","nw","sw"]]
 
 walk :: [String] -> Coord
 walk = foldl' (flip move) origin
