@@ -50,12 +50,11 @@ valid x = isJust
      guard . range (2010::Integer) 2020 =<< readMaybe =<< lookup Fiyr x
      guard . range (2020::Integer) 2030 =<< readMaybe =<< lookup Feyr x
 
-     (hgtStr, hgtU) <- span isDigit <$> lookup Fhgt x
-     hgt :: Integer <- readMaybe hgtStr
-     guard case hgtU of
-             "cm" -> range 150 193 hgt
-             "in" -> range  59  76 hgt
-             _    -> False
+     hgt <- lookup Fhgt x
+     guard case reads hgt of
+             [(n,"cm")] -> range 150 193 (n::Integer)
+             [(n,"in")] -> range  59  76 (n::Integer)
+             _          -> False
 
      '#':cs <- lookup Fhcl x
      guard (length cs == 6 && all isHexDigit cs)
