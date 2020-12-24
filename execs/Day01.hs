@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 1 solution
@@ -13,7 +14,7 @@ product.
 -}
 module Main where
 
-import Advent (getParsedLines, number)
+import Advent.Format (format)
 import Data.List (sort)
 
 -- | >>> :main
@@ -21,7 +22,7 @@ import Data.List (sort)
 -- 267520550
 main :: IO ()
 main =
-  do input <- getParsedLines 1 number
+  do input <- [format|1 (%u%n)*|]
      print (solve input 2)
      print (solve input 3)
 

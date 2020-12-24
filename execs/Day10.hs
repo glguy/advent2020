@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -10,7 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (getParsedLines, count, number)
+import Advent (count)
+import Advent.Format (format)
 import Data.List (sort)
 
 -- |
@@ -19,7 +21,7 @@ import Data.List (sort)
 -- 347250213298688
 main :: IO ()
 main =
-  do adapters <- getParsedLines 10 number :: IO [Int]
+  do adapters <- [format|10 (%u%n)*|]
      let socket = 0
      let device = maximum adapters + 3
 

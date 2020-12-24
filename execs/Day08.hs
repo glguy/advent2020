@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, QuasiQuotes, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -11,8 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent
-import Control.Applicative
+import Advent.Format (format)
 import Data.Graph.Inductive qualified as G
 import Data.Maybe (fromJust, mapMaybe)
 
@@ -28,15 +27,8 @@ import Data.Maybe (fromJust, mapMaybe)
 -- take a control path generated from a toggled instruction.
 type Cfg = G.Gr Int Int
 
-------------------------------------------------------------------------
-
-data Opcode = Nop | Acc | Jmp
-
-opcode :: Parser Opcode
-opcode = Nop <$ "nop" <|> Acc <$ "acc" <|> Jmp <$ "jmp"
-
-instruction :: Parser (Opcode, Int)
-instruction = (,) <$> opcode <* " " <*> number
+data O = Onop | Ojmp | Oacc
+pure[]
 
 ------------------------------------------------------------------------
 
@@ -46,7 +38,7 @@ instruction = (,) <$> opcode <* " " <*> number
 -- 1023
 main :: IO ()
 main =
-  do cfg <- pgmToCfg <$> getParsedLines 8 instruction
+  do cfg <- pgmToCfg <$> [format|8 (@O (|%+)%d%n)*|]
      print (pathSum cfg (G.dfs [0] (G.elfilter (0==) cfg)))
      print (pathSum cfg (fromJust (G.sp 0 (G.noNodes cfg-1) cfg)))
 
@@ -54,17 +46,17 @@ main =
 pathSum :: Cfg -> G.Path -> Int
 pathSum inp path = sum (mapMaybe (G.lab inp) path)
 
-pgmToCfg :: [(Opcode, Int)] -> Cfg
+pgmToCfg :: [(O, Int)] -> Cfg
 pgmToCfg pgm =
   G.mkGraph
     (zip [0..] (map accEffect pgm ++ [0]))
     (concat (zipWith edge [0..] pgm))
 
-accEffect :: (Opcode, Int) -> Int
-accEffect (Acc, n) = n
-accEffect _        = 0
+accEffect :: (O, Int) -> Int
+accEffect (Oacc, n) = n
+accEffect _         = 0
 
-edge :: Int -> (Opcode, Int) -> [G.LEdge Int]
-edge i (Nop, n) = [(i, i+1, 0), (i, i+n, 1)]
-edge i (Jmp, n) = [(i, i+n, 0), (i, i+1, 1)]
-edge i (Acc, _) = [(i, i+1, 0)]
+edge :: Int -> (O, Int) -> [G.LEdge Int]
+edge i (Onop, n) = [(i, i+1, 0), (i, i+n, 1)]
+edge i (Ojmp, n) = [(i, i+n, 0), (i, i+1, 1)]
+edge i (Oacc, _) = [(i, i+1, 0)]

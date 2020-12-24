@@ -21,6 +21,7 @@ tokens :-
 "&"     { const TSepBy                  }
 "|"     { const TAlt                    }
 "!"     { const TBang                   }
+"@" .   { TAt . tail                    }
 "%n"    { const (TLiteral '\n')         }
 "%" .   { TLiteral . head . tail        }
 .       { TLiteral . head               }

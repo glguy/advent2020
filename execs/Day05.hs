@@ -1,3 +1,4 @@
+{-# Language TemplateHaskell, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 5 solution
@@ -10,8 +11,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent
+import Advent.Format (format)
 import Data.List (sort)
+
+data H = HL | HR | HF | HB
+pure[]
 
 -- |
 -- >>> :main
@@ -19,7 +23,7 @@ import Data.List (sort)
 -- 653
 main :: IO ()
 main =
-  do inp <- getInputLines 5
+  do inp <- [format|5 (@H*%n)*|]
      let seatIds = map seatId inp
      print (maximum seatIds)
      print (gap (sort seatIds))
@@ -29,14 +33,13 @@ gap (x:y:_) | x+2 == y = x+1
 gap (_:xs) = gap xs
 gap [] = error "couldn't find a gap"
 
-seatId :: String -> Int
+seatId :: [H] -> Int
 seatId xs = let (r,c) = seat xs in 8*r+c
 
-seat :: String -> (Int,Int)
+seat :: [H] -> (Int,Int)
 seat = foldl f (0,0)
   where
-    f (r,c) 'L' = (r,2*c  )
-    f (r,c) 'R' = (r,2*c+1)
-    f (r,c) 'F' = (2*r  ,c)
-    f (r,c) 'B' = (2*r+1,c)
-    f _     _   = error "bad direction"
+    f (r,c) HL = (r,2*c  )
+    f (r,c) HR = (r,2*c+1)
+    f (r,c) HF = (2*r  ,c)
+    f (r,c) HB = (2*r+1,c)

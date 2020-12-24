@@ -22,6 +22,7 @@ import Advent.Format.Types
 '%lu'                           { TUnsignedInteger      }
 '%ld'                           { TSignedInteger        }
 LIT                             { TLiteral $$           }
+NAME                            { TAt $$                }
 
 %name parseFormat format
 
@@ -54,6 +55,7 @@ atom
   | atom '+'                    { Some $1               }
   | atom '!'                    { Gather $1             }
   | atom '&' atom               { SepBy $1 $3           }
+  | NAME                        { Named $1              }
 
 {
 }

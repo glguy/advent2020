@@ -14,6 +14,7 @@ data Token
   | TSome
   | TSepBy
   | TAlt
+  | TAt String
   | TBang
   | TLiteral Char
   deriving (Eq, Ord, Show, Read)
@@ -28,6 +29,7 @@ data Format
   | Follow [Format] -- REVERSE ORDER!
   -- return matched string
   | Gather Format
+  | Named String
   -- primitives
   | Literal String -- REVERSE ORDER!
   | UnsignedInteger
@@ -55,10 +57,13 @@ interesting s =
     Char                -> True
     Letter              -> True
     Gather{}            -> True
+    Named{}             -> True
     Literal{}           -> False
 
 follow :: Format -> Format -> Format
 follow (Literal x) (Literal y) = Literal (y++x)
+follow x          (Follow []) = x
+follow (Follow []) y          = y
 follow (Follow (Literal x:xs)) (Literal y) = Follow (Literal (y++x):xs)
 follow (Follow x) (Follow y) = Follow (y++x)
 follow x          (Follow y) = Follow (y++[x])

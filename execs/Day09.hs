@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -11,7 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (UVector, getParsedLines, decimal)
+import Advent (UVector)
+import Advent.Format (format)
 import Data.Vector.Generic qualified as V
 
 -- |
@@ -20,12 +21,13 @@ import Data.Vector.Generic qualified as V
 -- 2186361
 main :: IO ()
 main =
-  do inp <- V.fromList <$> getParsedLines 9 decimal
+  do inp <- [format|9 (%d%n)*|]
+     let v = V.fromList inp
 
-     let target = part1 inp
+     let target = part1 v
      print target
 
-     let range = part2 inp 0 target
+     let range = part2 v 0 target
      print (V.minimum range + V.maximum range)
 
 -- | Returns 'True' when no pair of numbers exists in the vector that

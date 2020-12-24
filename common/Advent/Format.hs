@@ -1,7 +1,7 @@
-{-# Language TemplateHaskell #-}
+{-# Language BlockArguments, TemplateHaskell #-}
 module Advent.Format (format) where
 
-import Advent (getRawInput)
+import Advent (count, getRawInput)
 import Advent.Format.Lexer
 import Advent.Format.Parser (parseFormat)
 import Advent.Format.Types
@@ -9,6 +9,9 @@ import Control.Applicative ((<|>), some)
 import Control.Monad
 import Data.Char
 import Data.Maybe
+import Data.Traversable
+import Data.List (stripPrefix)
+import Data.Foldable (asum)
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 import Text.ParserCombinators.ReadP
@@ -47,8 +50,12 @@ prepare str =
 makeParser :: Int -> String -> ExpQ
 makeParser n str =
   do fmt <- parse str
-     let qf = [| maybe (error "bad input parse") fst . listToMaybe . readP_to_S ($(toReadP fmt) <* eof) |]
-     if n == 0 then qf else [| $qf <$> getRawInput n |]
+     let formats = [| readP_to_S ($(toReadP fmt) <* eof) |]
+     let qf = [| maybe (error "bad input parse") fst . listToMaybe . $formats |]
+     if n == 0 then
+       qf
+     else
+       [| $qf <$> getRawInput n |]
 
 toReadP :: Format -> ExpQ
 toReadP s =
@@ -57,6 +64,8 @@ toReadP s =
       where xs = reverse xs_
 
     Gather p -> [| fst <$> gather $(toReadP p) |]
+
+    Named n -> enumParser n
 
     UnsignedInteger -> [| (read :: String -> Integer) <$>                                      munch1 isDigit  |]
     SignedInteger   -> [| (read :: String -> Integer) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
@@ -90,14 +99,49 @@ toReadP s =
         xp = toReadP x
         yp = toReadP y
 
-    Follow xs_ -> foldl (\l r ->
+    Follow [] -> [| pure () |]
+    Follow xs_
+      | n <= 1 -> foldl (\l r ->
                             let r' = toReadP r in
-                            if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
-                        ) fun xs
-      where
-        xs = reverse xs_
-        n  = length (filter interesting xs)
+                            if interesting r then [| $l *> $r' |] else [| $l <* $r' |]
+                       ) (toReadP x) xs
 
-        fun
-          | n == 1    = [| pure id |]
-          | otherwise = [| pure $(conE (tupleDataName n)) |]
+      | interesting x ->
+        foldl (\l r ->
+                 let r' = toReadP r in
+                 if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
+              ) [| $(conE (tupleDataName n)) <$> $(toReadP x) |] xs
+
+      | otherwise ->
+        foldl (\l r ->
+                 let r' = toReadP r in
+                 if interesting r then [| $l <*> $r' |] else [| $l <* $r' |]
+              ) [| $(conE (tupleDataName n)) <$ $(toReadP x) |] xs
+      where
+        x:xs = reverse xs_
+        n    = Advent.count interesting (x:xs)
+
+
+
+enumParser :: String -> ExpQ
+enumParser nameStr =
+  do tyName <- maybe (fail ("Failed to find type named " ++ show nameStr)) pure
+           =<< lookupTypeName nameStr
+
+     info <- reify tyName
+     cons <-
+       case info of
+         TyConI (DataD _ _ _ _ cons _) -> pure cons
+         _ -> fail ("Failed to find data declaration for " ++ show nameStr)
+
+     entries <-
+       for cons \con ->
+         case con of
+           NormalC name []
+             | Just str <- stripPrefix nameStr (nameBase name) ->
+                pure (name, str)
+           _ -> fail ("Unsupported constructor: " ++ show con)
+
+     let parsers = [[| $(conE name) <$ string str |] | (name, str) <- entries]
+
+     [| asum $(listE parsers) |]

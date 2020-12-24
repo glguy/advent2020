@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, QuasiQuotes #-}
+{-# Language TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 24 solution
@@ -20,9 +20,16 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
+data D = De | Dne | Dse | Dw | Dnw | Dsw
+pure []
+
+-- |
+-- >>> :main
+-- 400
+-- 3768
 main :: IO ()
 main =
-  do inp <- [format|24 ((e|se|sw|w|nw|ne)!*%n)*|]
+  do inp <- [format|24 (@D*%n)*|]
      let board = odds (map walk inp)
      print (Set.size board)
      print (Set.size (times 100 step board))
@@ -41,16 +48,15 @@ step board
     rule k v = v == 2 || v == 1 && Set.member k board
 
 neighborhood :: Map Coord Int
-neighborhood = cardinality [move d origin | d <- ["w","e","ne","se","nw","sw"]]
+neighborhood = cardinality [move d origin | d <- [Dw,De,Dne,Dse,Dnw,Dsw]]
 
-walk :: [String] -> Coord
+walk :: [D] -> Coord
 walk = foldl' (flip move) origin
 
-move :: String -> Coord -> Coord
-move "w"  = left
-move "e"  = right
-move "ne" = above . right
-move "se" = below
-move "nw" = above
-move "sw" = below . left
-move _    = error "bad move"
+move :: D -> Coord -> Coord
+move Dw  = left
+move De  = right
+move Dne = above . right
+move Dse = below
+move Dnw = above
+move Dsw = below . left
