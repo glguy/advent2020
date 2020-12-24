@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, LambdaCase #-}
+{-# Language LambdaCase, QuasiQuotes, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -15,7 +15,9 @@ import Advent.Coord
 import Advent.Format (format)
 import Data.List (foldl')
 
-type Command = (Char, Int)
+type Command = (D, Int)
+data D = DN | DS | DE | DW | DL | DR | DF deriving (Read, Show)
+pure[]
 
 -- | The simulation tracks the current location and the vector used
 -- when moving /forward/.
@@ -35,7 +37,7 @@ mapVect f s = s { vect = f (vect s) }
 -- 41212
 main :: IO ()
 main =
-  do inp <- [format|12 (%c%u%n)*|]
+  do inp <- [format|12 (@D%u%n)*|]
      print (walk mapHere (Sim origin east                ) inp)
      print (walk mapVect (Sim origin (move 10 east north)) inp)
 
@@ -46,18 +48,19 @@ action ::
   Update Sim Coord {- ^ cardinal direction component -} ->
   Sim -> Command -> Sim
 action mapCard st = \case
-  ('N',   n) -> mapCard (move n north    ) st
-  ('S',   n) -> mapCard (move n south    ) st
-  ('E',   n) -> mapCard (move n east     ) st
-  ('W',   n) -> mapCard (move n west     ) st
-  ('F',   n) -> mapHere (move n (vect st)) st
-  ('L',  90) -> mapVect turnLeft           st
-  ('R', 270) -> mapVect turnLeft           st
-  ('R',  90) -> mapVect turnRight          st
-  ('L', 270) -> mapVect turnRight          st
-  ('L', 180) -> mapVect turnAround         st
-  ('R', 180) -> mapVect turnAround         st
-  x          -> error ("Unknown command: " ++ show x)
+  (DN,   n) -> mapCard (move n north    ) st
+  (DS,   n) -> mapCard (move n south    ) st
+  (DE,   n) -> mapCard (move n east     ) st
+  (DW,   n) -> mapCard (move n west     ) st
+  (DF,   n) -> mapHere (move n (vect st)) st
+  (DL,  90) -> mapVect turnLeft           st
+  (DL, 270) -> mapVect turnRight          st
+  (DL, 180) -> mapVect turnAround         st
+  (DL,   _) -> error "bad left turn"
+  (DR,  90) -> mapVect turnRight          st
+  (DR, 180) -> mapVect turnAround         st
+  (DR, 270) -> mapVect turnLeft           st
+  (DR,   _) -> error "bad right turn"
 
 move :: Int -> Coord -> Coord -> Coord
 move n v = addCoord (scaleCoord n v)
