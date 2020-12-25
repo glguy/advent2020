@@ -30,7 +30,7 @@ main =
      traverse_ print (hack params pub1 pub2)
 
 hack :: DHParams -> Integer -> Integer -> Maybe Integer
-hack (DH g (someNatVal -> SomeNat px)) (toMod px -> public1) (toMod px -> public2) =
+hack (DH g (someNatVal -> SomeNat n)) (toMod n -> public1) (toMod n -> public2) =
   do cg      <- cyclicGroup
      subject <- isPrimitiveRoot cg (fromInteger g)
      public' <- isMultElement public1
