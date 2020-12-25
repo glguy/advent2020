@@ -20,11 +20,15 @@ type Modulus = 20201227
 
 main :: IO ()
 main =
-  do (pub1,pub2) <- [format|25 %lu%n%lu%n|]
-     let public1      = fromIntegral pub1 :: Mod Modulus
-     let public2      = fromIntegral pub2 :: Mod Modulus
-     let Just m       = cyclicGroup
-     let Just subject = isPrimitiveRoot m 7
-     let Just public' = isMultElement public1
-     let privateLoop  = discreteLogarithm m subject public'
-     print (getVal (public2 ^% privateLoop))
+  do (pub1,pub2) <- [format|25 %u%n%u%n|]
+     print (solve pub1 pub2)
+
+solve :: Int -> Int -> Integer
+solve pub1 pub2 = getVal (public2 ^% privateLoop)
+  where
+    public1      = fromIntegral pub1 :: Mod Modulus
+    public2      = fromIntegral pub2 :: Mod Modulus
+    Just m       = cyclicGroup
+    Just subject = isPrimitiveRoot m 7
+    Just public' = isMultElement public1
+    privateLoop  = discreteLogarithm m subject public'
