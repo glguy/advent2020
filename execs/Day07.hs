@@ -16,7 +16,7 @@ gold bag.
 -}
 module Main (main) where
 
-import Advent (count, löb)
+import Advent (count)
 import Advent.Format (format)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -40,9 +40,11 @@ main =
      print (sum (tc Map.! k))
 
 transClosBags :: [Rule] -> Map Bag (Map Bag Integer)
-transClosBags rules = löb (expand <$> Map.fromList rules)
+transClosBags rules = tc
+  where
+    tc = expand <$> Map.fromList rules
 
-expand :: Maybe [(Integer,Bag)] -> Map Bag (Map Bag Integer) -> Map Bag Integer
-expand inside tc =
-  Map.unionsWith (+)
-    [(n*) <$> Map.insertWith (+) b 1 (tc Map.! b) | (n,b) <- fromMaybe [] inside]
+    expand inside =
+      Map.unionsWith (+)
+        [ (n*) <$> Map.insertWith (+) b 1 (tc Map.! b)
+        | (n,b) <- fromMaybe [] inside]
