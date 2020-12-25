@@ -18,7 +18,8 @@ import Data.Sequence (Seq(..))
 import Data.Sequence qualified as Seq
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Vector.Generic qualified as V
+import Data.Vector.Unboxed (Vector)
+import Data.Vector.Unboxed qualified as V
 
 -- |
 -- >>> :main
@@ -39,7 +40,7 @@ score :: Deck -> Int
 score = sum . zipWith (*) [1..] . reverse . toList
 
 -- | representation of a game state used to find cycles
-type Rep = UVector Int
+type Rep = Vector Int
 
 characterize :: Deck -> Deck -> Rep
 characterize xs ys = V.fromList (toList xs ++ (-1) : toList ys)

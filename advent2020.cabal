@@ -33,11 +33,10 @@ library
     Advent
     Advent.Chinese
     Advent.Coord
+    Advent.Format
     Advent.PQueue
     Advent.Queue
     Advent.Search
-    Advent.Format
-    --Advent.Visualize
 
   other-modules:
     Advent.Format.Lexer
@@ -50,11 +49,8 @@ library
     base         ^>= 4.14,
     array        ^>= 0.5.4,
     containers   ^>= 0.6,
-    megaparsec   ^>= 9.0,
-    vector       ^>= 0.12,
     integer-gmp  ^>= 1.0,
-    template-haskell,
-    --JuicyPixels  ^>= 3.3.2,
+    template-haskell ^>= 2.16,
 
   if flag(bench)
     exposed-modules: Advent.Bench

@@ -1,9 +1,5 @@
 {-# Language ImportQualifiedPost, OverloadedStrings #-}
-module Advent
-  ( module Advent
-  , satisfy, anySingle, endBy, endBy1
-  , sepBy, sepBy1, manyTill, decimal, letterChar, parseMaybe
-  ) where
+module Advent where
 
 import Advent.Coord
 import Control.Applicative ((<|>))
@@ -15,14 +11,8 @@ import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Vector qualified as Vector
-import Data.Vector.Unboxed qualified as UVector
 import Data.Void
 import System.Environment
-import Text.Megaparsec (parseMaybe, setInput, anySingle, satisfy, parse, Parsec, eof, sepBy, endBy, sepBy1, endBy1, manyTill)
-import Text.Megaparsec.Char (newline, letterChar)
-import Text.Megaparsec.Char.Lexer (decimal, signed)
-import Text.Megaparsec.Error (errorBundlePretty)
 import Text.Printf
 
 -- | Get the input for the given day.
@@ -47,51 +37,10 @@ inputFileName = printf "inputs/input%02d.txt"
 getInputLines :: Int -> IO [String]
 getInputLines i = lines <$> getRawInput i
 
-type Parser = Parsec Void String
-
-getParsedInput :: Int -> Parser a -> IO a
-getParsedInput i p =
-  do input <- getRawInput i
-     case parse p "input" input of
-       Left e -> fail (errorBundlePretty e)
-       Right a -> return a
-
--- | Run a parser with 'parseLines' on the input file.
-getParsedLines :: Int -> Parser a -> IO [a]
-getParsedLines i p =
-  do input <- getRawInput i
-     either fail return (parseLines p input)
-
-type Vector = Vector.Vector
-type UVector = UVector.Vector
-
-getInputVector :: Int -> IO (Vector.Vector (UVector.Vector Char))
-getInputVector i =
-  do xs <- getInputLines i
-     pure (Vector.fromList (map UVector.fromList xs))
-
 getInputArray :: Int -> IO (A.UArray Coord Char)
 getInputArray i =
   do xs <- getInputLines i
      pure $! A.listArray (C 0 0, C (length xs - 1) (length (head xs) - 1)) (concat xs)
-
--- | Run a parser on each line of the input file. Each line will be parsed
--- in isolation. The parser must consume the whole line.
---
--- >>> parseLines (Control.Applicative.many anySingle) "12\n34\n"
--- Right ["12","34"]
--- >>> parseLines number "12\n34\n"
--- Right [12,34]
-parseLines :: Parser a -> String -> Either String [a]
-parseLines p input =
-  case parse (traverse parse1 (lines input)) "input" input of
-    Left  e -> Left (errorBundlePretty e)
-    Right a -> Right a
-  where
-    parse1 x = setInput x *> p <* eof <* setInput "\n" <* newline
-
-spaces :: Parser ()
-spaces = " " *> spaces <|> pure ()
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 count :: Foldable t => (a -> Bool) -> t a -> Int
@@ -122,10 +71,6 @@ same xs = all (head (toList xs) ==) xs
 -- [(1,[2,3]),(2,[1,3]),(3,[1,2])]
 pickOne :: [a] -> [(a, [a])]
 pickOne xs = [ (x, l++r) | (l,x:r) <- zip (inits xs) (tails xs) ]
-
--- | Parse a signed integral number
-number :: Integral a => Parser a
-number = signed (return ()) decimal
 
 -- | Implementation of 'nub' that uses 'Ord' for efficiency.
 ordNub :: Ord a => [a] -> [a]

@@ -11,9 +11,9 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (UVector)
 import Advent.Format (format)
-import Data.Vector.Generic qualified as V
+import Data.Vector.Unboxed (Vector)
+import Data.Vector.Unboxed qualified as V
 
 -- |
 -- >>> :main
@@ -32,7 +32,7 @@ main =
 
 -- | Returns 'True' when no pair of numbers exists in the vector that
 -- sums up to the given target value.
-search :: Int -> UVector Int -> Bool
+search :: Int -> Vector Int -> Bool
 search target haystack = and
   [ haystack V.! i + haystack V.! j /= target
   | i <- [0   .. V.length haystack - 2]
@@ -41,7 +41,7 @@ search target haystack = and
 
 -- | Find a number in the vector that is /not/ the sum of any pair of
 -- numbers in the 25 elements preceding it.
-part1 :: UVector Int -> Int
+part1 :: Vector Int -> Int
 part1 v
   | search (v V.! 25) (V.take 25 v) = v V.! 25
   | otherwise = part1 (V.tail v)
@@ -49,10 +49,10 @@ part1 v
 -- | Find a contiguous subsequence of the given vector that sums to
 -- the given target.
 part2 ::
-  UVector Int {- ^ remaining elements                -} ->
+  Vector Int {- ^ remaining elements                -} ->
   Int         {- ^ leading elements used             -} ->
   Int         {- ^ remaining target value            -} ->
-  UVector Int {- ^ subsequence matching target value -}
+  Vector Int {- ^ subsequence matching target value -}
 part2 v n acc =
   case compare acc 0 of
     EQ | n > 1 -> V.take n v                              -- done
