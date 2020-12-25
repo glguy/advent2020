@@ -23,8 +23,8 @@ main =
   do (pub1,pub2) <- [format|25 %lu%n%lu%n|]
      let public1      = fromIntegral pub1 :: Mod Modulus
      let public2      = fromIntegral pub2 :: Mod Modulus
-     let Just m       = cyclicGroup :: Maybe (CyclicGroup Integer Modulus)
+     let Just m       = cyclicGroup
      let Just subject = isPrimitiveRoot m 7
-     let Just public' = isMultElement (fromInteger pub1)
+     let Just public' = isMultElement public1
      let privateLoop  = discreteLogarithm m subject public'
      print (getVal (public2 ^% privateLoop))
