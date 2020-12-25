@@ -44,7 +44,7 @@ transClosBags rules = tc
   where
     tc = expand <$> Map.fromList rules
 
-    expand inside =
+    expand contents =
       Map.unionsWith (+)
-        [ (n*) <$> Map.insertWith (+) b 1 (tc Map.! b)
-        | (n,b) <- fromMaybe [] inside]
+        [ (n*) <$> Map.insertWith (+) bag 1 (tc Map.! bag)
+        | (n, bag) <- fromMaybe [] contents]
