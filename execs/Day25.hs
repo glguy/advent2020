@@ -1,4 +1,4 @@
-{-# Language DataKinds, ImportQualifiedPost, QuasiQuotes #-}
+{-# Language ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 25 solution
@@ -14,21 +14,27 @@ Brute-forcing this took me about 6 seconds, but using math makes it instant.
 module Main (main) where
 
 import Advent.Format (format)
-import Math.NumberTheory.Moduli
+import Data.Foldable (traverse_)
+import GHC.TypeNats (KnownNat, SomeNat(SomeNat), someNatVal)
+import Math.NumberTheory.Moduli ((^%), Mod, cyclicGroup, discreteLogarithm, getVal, isMultElement, isPrimitiveRoot)
+import Numeric.Natural (Natural)
 
-type Modulus = 20201227
+data DHParams = DH Integer Natural -- ^ generator modulus
+
+params :: DHParams
+params = DH 7 20201227
 
 main :: IO ()
 main =
-  do (pub1,pub2) <- [format|25 %u%n%u%n|]
-     print (solve pub1 pub2)
+  do (pub1,pub2) <- [format|25 %lu%n%lu%n|]
+     traverse_ print (hack params pub1 pub2)
 
-solve :: Int -> Int -> Integer
-solve pub1 pub2 = getVal (public2 ^% privateLoop)
-  where
-    public1      = fromIntegral pub1 :: Mod Modulus
-    public2      = fromIntegral pub2 :: Mod Modulus
-    Just m       = cyclicGroup
-    Just subject = isPrimitiveRoot m 7
-    Just public' = isMultElement public1
-    privateLoop  = discreteLogarithm m subject public'
+hack :: DHParams -> Integer -> Integer -> Maybe Integer
+hack (DH g (someNatVal -> SomeNat px)) (toMod px -> public1) (toMod px -> public2) =
+  do cg      <- cyclicGroup
+     subject <- isPrimitiveRoot cg (fromInteger g)
+     public' <- isMultElement public1
+     pure (getVal (public2 ^% discreteLogarithm cg subject public'))
+
+toMod :: KnownNat m => proxy m -> Integer -> Mod m
+toMod _ = fromInteger
