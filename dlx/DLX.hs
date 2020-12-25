@@ -10,6 +10,7 @@ import Data.IORef
 import Data.List
 import Data.Map qualified as Map
 import Data.IntMap qualified as IntMap
+import System.IO.Unsafe
 
 data Dlx_
 type Dlx = Ptr Dlx_
@@ -35,8 +36,9 @@ report solnsRef ptr n =
   do xs <- peekArray (fromIntegral n) ptr
      modifyIORef solnsRef (map fromIntegral xs:)
 
-dlxRaw :: DlxLimit -> [(Int,Int)] -> [Int] -> IO [[Int]]
+dlxRaw :: DlxLimit -> [(Int,Int)] -> [Int] -> [[Int]]
 dlxRaw limit ones opts =
+  unsafeDupablePerformIO $
   newIORef [] >>= \solnsRef ->
   bracket dlx_new dlx_clear \p ->
   do for_ ones \(r,c) -> dlx_set p (fromIntegral r) (fromIntegral c)
@@ -45,18 +47,19 @@ dlxRaw limit ones opts =
      bracket (mkCB (report solnsRef)) freeHaskellFunPtr (dlx_forall p single_)
      readIORef solnsRef
 
-dlx :: (Ord a, Ord b) => [(a,b)] -> IO [[a]]
+dlx :: (Ord a, Ord b) => [(a,b)] -> [[a]]
 dlx input = dlxOpt SingleResult input (const False)
 
-dlxOpt :: (Ord a, Ord b) => DlxLimit -> [(a,b)] -> (b -> Bool) -> IO [[a]]
+dlxOpt :: (Ord a, Ord b) => DlxLimit -> [(a,b)] -> (b -> Bool) -> [[a]]
 dlxOpt limit input opt =
-  do let as = nub (sort (map fst input))
-         bs = nub (sort (map snd input))
-         a2i = Map.fromList (zip as [0..])
-         b2i = Map.fromList (zip bs [0..])
-         i2a = IntMap.fromList (zip [0..] as)
+  [[i2a IntMap.! a | a <- answer] | answer <- answers]
+  where
+    as = nub (sort (map fst input))
+    bs = nub (sort (map snd input))
+    a2i = Map.fromList (zip as [0..])
+    b2i = Map.fromList (zip bs [0..])
+    i2a = IntMap.fromList (zip [0..] as)
 
-     answers <- dlxRaw limit
-                       [(a2i Map.! a, b2i Map.! b) | (a,b) <- input]
-                       [i | (b,i) <- zip bs [0..], opt b]
-     pure [[i2a IntMap.! a | a <- answer] | answer <- answers]
+    answers = dlxRaw limit
+                  [(a2i Map.! a, b2i Map.! b) | (a,b) <- input]
+                  [i | (b,i) <- zip bs [0..], opt b]
