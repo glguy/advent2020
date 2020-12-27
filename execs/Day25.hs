@@ -24,6 +24,9 @@ data DHParams = DH Integer Natural -- ^ generator modulus
 params :: DHParams
 params = DH 7 20201227
 
+-- |
+-- >>> :main
+-- 181800
 main :: IO ()
 main =
   do (pub1,pub2) <- [format|25 %lu%n%lu%n|]
