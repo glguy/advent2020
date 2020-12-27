@@ -31,4 +31,4 @@ part1 :: Integer -> [Integer] -> Integer
 part1 t busses = uncurry (*) (minimum [((-t)`mod`b, b) | b <- busses])
 
 part2 :: [(Integer, Integer)] -> Maybe Integer
-part2 busses = chinese [toMod x y | (x,y) <- busses]
+part2 busses = chinese [toMod (-x) y | (x,y) <- busses]
