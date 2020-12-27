@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (count, löb)
+import Advent (count)
 import Advent.Format (format)
 import Data.Foldable (asum, traverse_)
 import Data.IntMap (IntMap)
@@ -43,10 +43,14 @@ run ::
   IntMap Rule {- ^ parse rules                      -} ->
   [String]    {- ^ input strings                    -} ->
   Int         {- ^ number of matching input strings -}
-run rules ws = count (not . null . readP_to_S parser) ws
+run rules = count (not . null . readP_to_S topParser)
   where
-    parser = löb (ruleParser <$> rules) IntMap.! 0 *> eof
+    topParser :: ReadP ()
+    topParser = parsers IntMap.! 0 *> eof
 
-ruleParser :: Rule -> IntMap (ReadP ()) -> ReadP ()
-ruleParser (Left  s  ) _   = () <$ string s
-ruleParser (Right xss) sub = asum [traverse_ (sub IntMap.!) xs | xs <- xss]
+    parsers :: IntMap (ReadP ())
+    parsers = ruleParser <$> rules
+
+    ruleParser :: Rule -> ReadP ()
+    ruleParser (Left  s  ) = () <$ string s
+    ruleParser (Right xss) = asum (traverse_ (parsers IntMap.!) <$> xss)
