@@ -12,8 +12,8 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Format (format)
-import Data.Graph.Inductive qualified as G
-import Data.Maybe (fromJust, mapMaybe)
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
 
 -- | Programs are expressed as control-flow graphs.
 --
@@ -25,8 +25,6 @@ import Data.Maybe (fromJust, mapMaybe)
 --
 -- Edges are labeled with the /cost/ of taking that edge. It costs @1@ to
 -- take a control path generated from a toggled instruction.
-type Cfg = G.Gr Int Int
-
 data O = Onop | Ojmp | Oacc
 pure[]
 
@@ -38,25 +36,27 @@ pure[]
 -- 1023
 main :: IO ()
 main =
-  do cfg <- pgmToCfg <$> [format|8 (@O (|%+)%d%n)*|]
-     print (pathSum cfg (G.dfs [0] (G.elfilter (0==) cfg)))
-     print (pathSum cfg (fromJust (G.sp 0 (G.noNodes cfg-1) cfg)))
+  do inp <- [format|8 (@O (|%+)%d%n)*|]
+     let pgm = IntMap.fromList (zip [0..] inp)
+     print (snd (part1 pgm 0 0))
+     print (part2 pgm 0 0)
 
--- | Sum of node labels along a path in a graph.
-pathSum :: Cfg -> G.Path -> Int
-pathSum inp path = sum (mapMaybe (G.lab inp) path)
+part1 :: IntMap (O, Int) -> Int -> Int -> (Int,Int)
+part1 pgm ip acc =
+  let continue = part1 (IntMap.delete ip pgm) in
+  case IntMap.lookup ip pgm of
+    Nothing        -> (ip, acc)
+    Just (Onop, _) -> continue (ip+1) acc
+    Just (Oacc, n) -> continue (ip+1) (acc+n)
+    Just (Ojmp, n) -> continue (ip+n) acc
 
-pgmToCfg :: [(O, Int)] -> Cfg
-pgmToCfg pgm =
-  G.mkGraph
-    (zip [0..] (map accEffect pgm ++ [0]))
-    (concat (zipWith edge [0..] pgm))
-
-accEffect :: (O, Int) -> Int
-accEffect (Oacc, n) = n
-accEffect _         = 0
-
-edge :: Int -> (O, Int) -> [G.LEdge Int]
-edge i (Onop, n) = [(i, i+1, 0), (i, i+n, 1)]
-edge i (Ojmp, n) = [(i, i+n, 0), (i, i+1, 1)]
-edge i (Oacc, _) = [(i, i+1, 0)]
+part2 :: IntMap (O, Int) -> Int -> Int -> Int
+part2 pgm ip acc =
+  case pgm IntMap.! ip of
+    (Onop, n) -> try (part1 pgm (ip+n) acc) (part2 pgm (ip+1) acc)
+    (Ojmp, n) -> try (part1 pgm (ip+1) acc) (part2 pgm (ip+n) acc)
+    (Oacc, n) -> part2 pgm (ip+1) (acc+n)
+  where
+    try (ip', acc') e
+      | ip' == IntMap.size pgm = acc'
+      | otherwise              = e

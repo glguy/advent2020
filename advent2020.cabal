@@ -116,7 +116,7 @@ executable Day07
 executable Day08
   import:              day
   main-is:             Day08.hs
-  build-depends:       fgl
+  build-depends:       containers
 
 executable Day09
   import:              day
