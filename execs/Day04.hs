@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ScopedTypeVariables, QuasiQuotes, TemplateHaskell #-}
+{-# Language BlockArguments, ScopedTypeVariables, QuasiQuotes, TemplateHaskell, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 4 solution
@@ -13,13 +13,10 @@ Passport validation
 -}
 module Main (main) where
 
-import Advent
+import Advent (count)
 import Advent.Format (format)
-import Control.Monad
 import Data.Char (isDigit, isHexDigit)
 import Data.List (delete, sort)
-import Data.Maybe (isJust)
-import Text.Read (readMaybe)
 
 type Passport = [(F, String)]
 data F = Fbyr | Fiyr | Feyr | Fhgt | Fhcl | Fecl | Fpid | Fcid deriving (Eq, Ord, Show)
@@ -32,8 +29,9 @@ pure[]
 main :: IO ()
 main =
   do inp <- [format|4 (@F:%s( |%n))*&%n|]
-     print (count complete inp)
-     print (count valid inp)
+     let xs = filter complete inp
+     print (length xs)
+     print (count (all (uncurry validate)) xs)
 
 reqFields :: [F]
 reqFields = sort [Fbyr, Fiyr, Feyr, Fhgt, Fhcl, Fecl, Fpid]
@@ -41,26 +39,17 @@ reqFields = sort [Fbyr, Fiyr, Feyr, Fhgt, Fhcl, Fecl, Fpid]
 complete :: Passport -> Bool
 complete x = reqFields == sort (delete Fcid (map fst x))
 
-range :: Ord a => a -> a -> a -> Bool
+range :: Integer -> Integer -> Integer -> Bool
 range lo hi x = lo <= x && x <= hi
 
-valid :: Passport -> Bool
-valid x = isJust
-  do guard . range (1920::Integer) 2002 =<< readMaybe =<< lookup Fbyr x
-     guard . range (2010::Integer) 2020 =<< readMaybe =<< lookup Fiyr x
-     guard . range (2020::Integer) 2030 =<< readMaybe =<< lookup Feyr x
-
-     hgt <- lookup Fhgt x
-     guard case reads hgt of
-             [(n,"cm")] -> range 150 193 (n::Integer)
-             [(n,"in")] -> range  59  76 (n::Integer)
-             _          -> False
-
-     '#':cs <- lookup Fhcl x
-     guard (length cs == 6 && all isHexDigit cs)
-
-     ecl <- lookup Fecl x
-     guard (ecl `elem` words "amb blu brn gry grn hzl oth")
-
-     pid <- lookup Fpid x
-     guard (length pid == 9 && all isDigit pid)
+validate :: F -> String -> Bool
+validate Fbyr (reads -> [(n,""  )]) = range 1920 2002 n
+validate Fiyr (reads -> [(n,""  )]) = range 2010 2020 n
+validate Feyr (reads -> [(n,""  )]) = range 2020 2030 n
+validate Fhgt (reads -> [(n,"cm")]) = range  150  193 n
+validate Fhgt (reads -> [(n,"in")]) = range   59   76 n
+validate Fhcl ('#':hcl)             = length hcl == 6 && all isHexDigit hcl
+validate Fecl ecl                   = ecl `elem` words "amb blu brn gry grn hzl oth"
+validate Fpid pid                   = length pid == 9 && all isDigit pid
+validate Fcid _                     = True
+validate _    _                     = False
