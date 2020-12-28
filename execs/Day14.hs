@@ -94,8 +94,8 @@ run2 ::
   IntMap Int {- ^ initial memory     -} ->
   [Cmd]      {- ^ program statements -} ->
   Int        {- ^ sum of memory      -}
-run2 _    mem []               = sum mem
-run2 _    mem (Left mask : xs) = run2 mask mem xs
+run2 _    mem []                 = sum mem
+run2 _    mem (Left mask   : xs) = run2 mask mem xs
 run2 mask mem (Right (k,v) : xs) = run2 mask mem' xs
   where
     mem' = foldl' (\m_ k_ -> IntMap.insert k_ v m_) mem
@@ -112,4 +112,4 @@ mask2 ::
 mask2 x i (M1:xs) = mask2 (setBit x i) (i-1) xs
 mask2 x i (M0:xs) = mask2 x (i-1) xs
 mask2 x i (MX:xs) = do y <- mask2 (setBit x i) (i-1) xs; [y, clearBit y i]
-mask2 x _ []     = [x]
+mask2 x _ []      = [x]
