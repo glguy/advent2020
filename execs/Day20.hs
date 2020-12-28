@@ -1,5 +1,4 @@
 {-# Language BlockArguments, ImportQualifiedPost, QuasiQuotes #-}
-{-# Options_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -12,18 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent             (cardinality, pickOne)
+import Advent (count, same)
 import Advent.Coord
 import Advent.Format (format)
-import Control.Monad      (guard)
-import Data.Foldable      (foldl', for_)
-import Data.Ix            (range)
-import Data.List          (mapAccumL, sort)
-import Data.Map           (Map)
-import Data.Map qualified as Map
-import Data.Set           (Set)
-import Data.Set qualified as Set
 import Data.Array qualified as A
+import Data.List (sort)
+import Data.Map (Map)
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 
 type Picture = [Coord]
 
@@ -34,10 +29,6 @@ snek =
     ["                  # "
     ,"#    ##    ##    ###"
     ," #  #  #  #  #  #   "]
-
--- the final image is a 12x12 arrangement of tiles
-sz :: Int
-sz = 12
 
 -- | Rotate an image 90 degrees clockwise
 rotate :: Picture -> Picture
@@ -54,6 +45,12 @@ reorient xs =
 toPicture :: [String] -> Picture
 toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
 
+-- | Characterize image orientations by their left edge
+edgeMap :: [(Int,Picture)] -> Map [Int] [(Int,Picture)]
+edgeMap xs =
+  Map.fromListWith (++)
+    [(leftEdge pic', [(i,pic')]) | (i, pic) <- xs, pic' <- reorient pic]
+
 -- |
 -- >>> :main
 -- 8581320593371
@@ -62,70 +59,64 @@ main :: IO ()
 main =
   do inp <- map (fmap toPicture) <$> [format|20 (Tile %u:%n(%s%n)*%n)*|]
 
-     -- "Tiles at the edge of the image also have this border,
-     -- but the outermost edges won't line up with any other tiles."
-     let edges
-           = Map.keysSet
-           $ Map.filter (1==)
-           $ cardinality [code | (_,pic) <- inp, code <- edgeCodes pic]
+     -- group available pictures by their left-edge code
+     let em = edgeMap inp
+
+     -- pick a tile with a unique left and top edge to be the first corner
+     let corner = head
+                   [ x | x:xs <- Map.elems em
+                       , let sameCodes = same . map fst -- edge codes that only match themselves
+                       , sameCodes (x:xs)
+                       , sameCodes (em Map.! topEdge (snd x))]
 
      -- arrange all the tiles
-     let aligned = place edges inp
+     let image = place em corner
 
      -- print the product of the corner tile IDs
-     print $ product [fst (aligned A.! C y x) | y <- [0, sz-1], x <- [0, sz-1]]
+     print $ product [fst (image A.! C y x) | y <- [0, 11], x <- [0, 11]]
 
      -- assemble the complete image while removing borders
-     let pic =
+     let pixels =
            Set.fromList
              [ C (8*yy+y-1) (8*xx+x-1)
-             | (C yy xx, (_,cell)) <- A.assocs aligned
-             , c@(C y x) <- cell
+             | (C yy xx, (_,cell)) <- A.assocs image
+             , C y x <- cell
              , y /= 0, x /= 0, y /= 9, x /= 9 -- remove edges
              ]
 
-     -- cut all the snakes out of the picture
-     print $ Set.size
-           $ foldl' cut pic
-               [ Set.fromList (addCoord d <$> s) -- translate the tile
-               | d <- range (C 0 0, C (8*sz) (8*sz))
-               , s <- reorient snek
-               ]
+     -- count occurrences of the snake in the pixel set
+     let n = count (`Set.isSubsetOf` pixels)
+             [ Set.mapMonotonic (addCoord d) s -- translate the tile
+             | s <- Set.fromList <$> reorient snek
+             , d <- A.range (C 0 0, C (8*12-1) (8*12-1))
+             ]
 
--- | Remove the needle from the haystack if the whole needle is found
--- in the haystack.
-cut ::
-  Ord a =>
-  Set a {- ^ haystack -} ->
-  Set a {- ^ needle   -} ->
-  Set a
-cut m s
-  | s `Set.isSubsetOf` m = m Set.\\ s
-  | otherwise            = m
+     -- cut all the snakes out of the picture
+     print (Set.size pixels - n * length snek)
 
 place ::
-  Set [Int] {- ^ edges -} ->
-  [(Int,Picture)] {- ^ tiles -} ->
+  Map [Int] [(Int, Picture)] ->
+  (Int, Picture) ->
   A.Array Coord (Int, Picture) {- ^ arranged image -}
-place edges tiles = board
+place em start = board
   where
-    bnds = (C 0 0, C (sz-1) (sz-1))
-    board = A.listArray bnds (snd (mapAccumL pickTile tiles (range bnds)))
-    pickTile avail c = head
-      [ (avail', (tileId, cell))
-      | ((tileId,cell_), avail') <- pickOne avail
-      , cell                     <- reorient cell_
-      , if coordRow c == 0
-          then normalize (topEdge cell) `Set.member` edges
-          else topEdge cell == bottomEdge (snd (board A.! above c))
-      , if coordCol c == 0
-          then normalize (leftEdge cell) `Set.member` edges
-          else leftEdge cell == rightEdge (snd (board A.! left c))
-      ]
+    bnds = (C 0 0, C 11 11)
+    board = A.listArray bnds (pickTile <$> A.range bnds)
 
--- | Extract all the normalized edge codes for a tile
-edgeCodes :: Picture -> [[Int]]
-edgeCodes xs = [normalize (f xs) | f <- [topEdge, leftEdge, bottomEdge, rightEdge]]
+    pickTile c
+      | c == origin = start
+
+      | coordRow c == 0 =
+         head [ (tileId, pic)
+              | let (nbId, nbPic) = board A.! left c
+              , (tileId, pic) <- em Map.! rightEdge nbPic
+              , tileId /= nbId ]
+
+      | otherwise =
+         head [ (tileId, rotate pic)
+              | let (nbId, nbPic) = board A.! above c
+              , (tileId, pic) <- em Map.! flipCode (bottomEdge nbPic)
+              , tileId /= nbId ]
 
 topEdge, leftEdge, bottomEdge, rightEdge :: [Coord] -> [Int]
 topEdge    xs = sort [x | C 0 x <- xs]
@@ -133,6 +124,5 @@ leftEdge   xs = sort [y | C y 0 <- xs]
 bottomEdge xs = sort [x | C 9 x <- xs]
 rightEdge  xs = sort [y | C y 9 <- xs]
 
--- | Normalize a code so that it can be identified even when flipped over
-normalize :: [Int] -> [Int]
-normalize x = min x (reverse (map (9-) x))
+flipCode :: [Int] -> [Int]
+flipCode = reverse . map (9-)
