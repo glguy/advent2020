@@ -13,16 +13,17 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent             (cardinality, pickOne)
-import Advent.Coord       (Coord(C), turnRight, invert, addCoord, coordRow, above, left)
+import Advent.Coord
 import Advent.Format (format)
 import Control.Monad      (guard)
 import Data.Foldable      (foldl', for_)
 import Data.Ix            (range)
-import Data.List          (sort)
+import Data.List          (mapAccumL, sort)
 import Data.Map           (Map)
 import Data.Map qualified as Map
 import Data.Set           (Set)
 import Data.Set qualified as Set
+import Data.Array qualified as A
 
 type Picture = [Coord]
 
@@ -69,20 +70,17 @@ main =
            $ cardinality [code | (_,pic) <- inp, code <- edgeCodes pic]
 
      -- arrange all the tiles
-     let aligned
-           = head
-           $ stitch edges Map.empty inp
-           $ range (C 0 0, C (sz-1) (sz-1))
+     let aligned = place edges inp
 
      -- print the product of the corner tile IDs
-     print $ product [fst (aligned Map.! C y x) | y <- [0, sz-1], x <- [0, sz-1]]
+     print $ product [fst (aligned A.! C y x) | y <- [0, sz-1], x <- [0, sz-1]]
 
      -- assemble the complete image while removing borders
      let pic =
            Set.fromList
              [ C (8*yy+y-1) (8*xx+x-1)
-             | (C yy xx, (_,cell)) <- Map.toList aligned
-             , C y x <- cell
+             | (C yy xx, (_,cell)) <- A.assocs aligned
+             , c@(C y x) <- cell
              , y /= 0, x /= 0, y /= 9, x /= 9 -- remove edges
              ]
 
@@ -105,29 +103,25 @@ cut m s
   | s `Set.isSubsetOf` m = m Set.\\ s
   | otherwise            = m
 
-stitch ::
-  Set [Int]                  {- ^ valid edge codes             -} ->
-  Map Coord (Int,Picture)    {- ^ current placement            -} ->
-  [(Int,Picture)]            {- ^ tiles remaining to be placed -} ->
-  [Coord]                    {- ^ unplaced coordinates         -} ->
-  [Map Coord (Int, Picture)] {- ^ list of successful layouts   -}
-stitch _     m _     []     = [m]
-stitch edges m avail (c:cs) =
-  do -- pick one of the remaining tiles and orient it
-     ((tileID,cell_), avail') <- pickOne avail
-     cell                     <- reorient cell_
-
-     -- match the tile above or if it's a valid edge
-     guard case Map.lookup (above c) m of
-       Just (_,l) -> topEdge cell == bottomEdge l
-       Nothing    -> normalize (topEdge cell) `Set.member` edges
-
-     -- match the tile to the left or that it's a valid edge
-     guard case Map.lookup (left c) m of
-       Just (_,l) -> leftEdge cell == rightEdge l
-       Nothing    -> normalize (leftEdge cell) `Set.member` edges
-
-     stitch edges (Map.insert c (tileID,cell) m) avail' cs
+place ::
+  Set [Int] {- ^ edges -} ->
+  [(Int,Picture)] {- ^ tiles -} ->
+  A.Array Coord (Int, Picture) {- ^ arranged image -}
+place edges tiles = board
+  where
+    bnds = (C 0 0, C (sz-1) (sz-1))
+    board = A.listArray bnds (snd (mapAccumL pickTile tiles (range bnds)))
+    pickTile avail c = head
+      [ (avail', (tileId, cell))
+      | ((tileId,cell_), avail') <- pickOne avail
+      , cell                     <- reorient cell_
+      , if coordRow c == 0
+          then normalize (topEdge cell) `Set.member` edges
+          else topEdge cell == bottomEdge (snd (board A.! above c))
+      , if coordCol c == 0
+          then normalize (leftEdge cell) `Set.member` edges
+          else leftEdge cell == rightEdge (snd (board A.! left c))
+      ]
 
 -- | Extract all the normalized edge codes for a tile
 edgeCodes :: Picture -> [[Int]]
