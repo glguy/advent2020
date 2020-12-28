@@ -11,14 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (count, same)
+import Advent (arrIx, count, same)
 import Advent.Coord
 import Advent.Format (format)
-import Data.Array qualified as A
-import Data.List (sort)
-import Data.Map (Map)
-import Data.Map.Strict qualified as Map
-import Data.Set qualified as Set
+import Data.Array.Unboxed qualified as A
+import Data.Bits (setBit)
+import Data.IntMap (IntMap)
+import Data.IntMap.Strict qualified as IntMap
+import Data.List (foldl')
 
 type Picture = [Coord]
 
@@ -46,9 +46,9 @@ toPicture :: [String] -> Picture
 toPicture rs = [C y x | (y,r) <- zip [0..] rs, (x,'#') <- zip [0..] r]
 
 -- | Characterize image orientations by their left edge
-edgeMap :: [(Int,Picture)] -> Map [Int] [(Int,Picture)]
+edgeMap :: [(Int,Picture)] -> IntMap [(Int,Picture)]
 edgeMap xs =
-  Map.fromListWith (++)
+  IntMap.fromListWith (++)
     [(leftEdge pic', [(i,pic')]) | (i, pic) <- xs, pic' <- reorient pic]
 
 -- |
@@ -64,10 +64,10 @@ main =
 
      -- pick a tile with a unique left and top edge to be the first corner
      let corner = head
-                   [ x | x:xs <- Map.elems em
+                   [ x | x:xs <- IntMap.elems em
                        , let sameCodes = same . map fst -- edge codes that only match themselves
                        , sameCodes (x:xs)
-                       , sameCodes (em Map.! topEdge (snd x))]
+                       , sameCodes (em IntMap.! topEdge (snd x))]
 
      -- arrange all the tiles
      let image = place em corner
@@ -76,26 +76,28 @@ main =
      print $ product [fst (image A.! C y x) | y <- [0, 11], x <- [0, 11]]
 
      -- assemble the complete image while removing borders
-     let pixels =
-           Set.fromList
-             [ C (8*yy+y-1) (8*xx+x-1)
+     let pixels :: A.UArray Coord Bool
+         pixels =
+           A.accumArray (\_ x -> x) False (C 0 0, C (8*12) (8*12))
+             [ (C (8*yy+y-1) (8*xx+x-1), True)
              | (C yy xx, (_,cell)) <- A.assocs image
              , C y x <- cell
              , y /= 0, x /= 0, y /= 9, x /= 9 -- remove edges
              ]
 
      -- count occurrences of the snake in the pixel set
-     let n = count (`Set.isSubsetOf` pixels)
-             [ Set.mapMonotonic (addCoord d) s -- translate the tile
-             | s <- Set.fromList <$> reorient snek
-             , d <- A.range (C 0 0, C (8*12-1) (8*12-1))
+     let n = length
+             [ ()
+             | s <- reorient snek
+             , d <- A.indices pixels
+             , all (\x -> arrIx pixels (addCoord x d) == Just True) s
              ]
 
      -- cut all the snakes out of the picture
-     print (Set.size pixels - n * length snek)
+     print (count id (A.elems pixels) - n * length snek)
 
 place ::
-  Map [Int] [(Int, Picture)] ->
+  IntMap [(Int, Picture)] ->
   (Int, Picture) ->
   A.Array Coord (Int, Picture) {- ^ arranged image -}
 place em start = board
@@ -109,20 +111,20 @@ place em start = board
       | coordRow c == 0 =
          head [ (tileId, pic)
               | let (nbId, nbPic) = board A.! left c
-              , (tileId, pic) <- em Map.! rightEdge nbPic
+              , (tileId, pic) <- em IntMap.! rightEdge nbPic
               , tileId /= nbId ]
 
       | otherwise =
          head [ (tileId, rotate pic)
               | let (nbId, nbPic) = board A.! above c
-              , (tileId, pic) <- em Map.! flipCode (bottomEdge nbPic)
+              , (tileId, pic) <- em IntMap.! bottomEdge' nbPic
               , tileId /= nbId ]
 
-topEdge, leftEdge, bottomEdge, rightEdge :: [Coord] -> [Int]
-topEdge    xs = sort [x | C 0 x <- xs]
-leftEdge   xs = sort [y | C y 0 <- xs]
-bottomEdge xs = sort [x | C 9 x <- xs]
-rightEdge  xs = sort [y | C y 9 <- xs]
+topEdge, leftEdge, bottomEdge', rightEdge :: [Coord] -> Int
+topEdge     xs = fromBits [  i | C 0 i <- xs]
+leftEdge    xs = fromBits [  i | C i 0 <- xs]
+bottomEdge' xs = fromBits [9-i | C 9 i <- xs]
+rightEdge   xs = fromBits [  i | C i 9 <- xs]
 
-flipCode :: [Int] -> [Int]
-flipCode = reverse . map (9-)
+fromBits :: [Int] -> Int
+fromBits = foldl' setBit 0
