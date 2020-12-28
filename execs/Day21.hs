@@ -18,6 +18,10 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
+-- |
+-- >>> :main
+-- 2517
+-- rhvbn,mmcpg,kjf,fvk,lbmt,jgtb,hcbdb,zrb
 main :: IO ()
 main =
   do inp <- [format|21 (%s&  %(contains %s&(, )%)%n)*|]
