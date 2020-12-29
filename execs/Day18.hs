@@ -13,7 +13,7 @@ module Main (main) where
 
 import Advent (getInputLines)
 import Control.Applicative ((<|>))
-import Data.Char (isDigit)
+import Data.Char (isDigit, digitToInt)
 import Text.ParserCombinators.ReadP
 
 -- |
@@ -32,16 +32,16 @@ run p = fst . head . readP_to_S (skipSpaces *> p <* eof)
 l :: Char -> ReadP ()
 l c = char c *> skipSpaces
 
-add, mul :: ReadP (Integer -> Integer -> Integer)
+add, mul :: ReadP (Int -> Int -> Int)
 add = (+) <$ l '+'
 mul = (*) <$ l '*'
 
-number :: ReadP Integer
-number = read <$> munch1 isDigit <* skipSpaces
+number :: ReadP Int
+number = digitToInt <$> satisfy isDigit <* skipSpaces
 
-aexpr :: ReadP Integer -> ReadP Integer
+aexpr :: ReadP Int -> ReadP Int
 aexpr top = number <|> between (l '(') (l ')') top
 
-expr1, expr2 :: ReadP Integer
+expr1, expr2 :: ReadP Int
 expr1 = chainl1 (aexpr expr1) (add <|> mul)
 expr2 = chainl1 (chainl1 (aexpr expr2) add) mul
