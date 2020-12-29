@@ -13,14 +13,13 @@ module Main (main) where
 
 import Advent (count)
 import Advent.Format (format)
-import Data.Foldable (asum, traverse_)
-import Data.IntMap (IntMap)
+import Data.IntMap.Strict (IntMap)
 import Data.IntMap qualified as IntMap
-import Text.ParserCombinators.ReadP (ReadP, eof, readP_to_S, string)
+import Text.ParserCombinators.ReadP (ReadP, char, choice, eof, pfail, readP_to_S)
 
 -- | Rules either match a literal string, or match a sum
 -- of product of sub-rules.
-type Rule = Either String [[Int]]
+type Rule = Either Char [[Int]]
 
 ------------------------------------------------------------------------
 
@@ -31,7 +30,7 @@ type Rule = Either String [[Int]]
 -- 323
 main :: IO ()
 main =
-  do (rs,ws) <- [format|19 (%u: ("%s"|%u& &( %| ))%n)*%n(%s%n)*|]
+  do (rs,ws) <- [format|19 (%u: ("%c"|%u& &( %| ))%n)*%n(%s%n)*|]
      let rules1 = IntMap.fromList rs
          rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])
                 $ IntMap.insert 11 (Right [[42,31],[42,11,31]])
@@ -46,11 +45,17 @@ run ::
 run rules = count (not . null . readP_to_S topParser)
   where
     topParser :: ReadP ()
-    topParser = parsers IntMap.! 0 *> eof
+    topParser = parsers IntMap.! 0 >> eof
 
-    parsers :: IntMap (ReadP ())
+    parsers :: IntMap (ReadP Char)
     parsers = ruleParser <$> rules
 
-    ruleParser :: Rule -> ReadP ()
-    ruleParser (Left  s  ) = () <$ string s
-    ruleParser (Right xss) = asum (traverse_ (parsers IntMap.!) <$> xss)
+    ruleParser :: Rule -> ReadP Char
+    ruleParser (Left  c) = char c
+    ruleParser (Right x) = choice (map order x)
+
+    order []     = pfail
+    order [x]    = parsers IntMap.! x
+    order (x:xs) = parsers IntMap.! x >> order xs
+
+
